@@ -1,85 +1,58 @@
-# MODULE SERVER
+# Base dự NodeJS
 
-> 📘 *Sinh viên mô tả phần **server** tại đây. Điền đầy đủ theo framework và bài toán của nhóm.*
+A base project nodejs backend
 
----
+## Project Structure
 
-## 🎯 MỤC TIÊU
-
-Server chịu trách nhiệm:
-- Tiếp nhận yêu cầu từ client
-- Xử lý dữ liệu/tính toán
-- Trả kết quả cho client
-
----
-
-## ⚙️ CÔNG NGHỆ SỬ DỤNG
-
-| Thành phần | Công nghệ |
-|------------|-----------|
-| Ngôn ngữ | Python / Node.js / Java / ... |
-| Framework | Flask / Express / Spring Boot / ... |
-| Database | SQLite / MySQL / ... (nếu có) |
-
----
-
-## 🚀 HƯỚNG DẪN CHẠY
-
-### Cài đặt
-```bash
-# Ví dụ với Python
-pip install -r requirements.txt
-
-# Hoặc với Node.js
-npm install
 ```
 
-### Khởi động server
-```bash
-# Ví dụ
-python app.py
-# hoặc
-node server.js
+src/
+├── controllers/         # Xử lý logic của các API, gọi tới services
+├── middlewares/         # Các middleware cho Express (xác thực, bắt lỗi, v.v.)
+├── models/              # Định nghĩa schema/data models (ORM hoặc thuần)
+├── routes/              # Định nghĩa các endpoint và ánh xạ controller tương ứng
+├── services/            # Chứa logic xử lý nghiệp vụ (business logic)
+├── shared/
+│   ├── constants/       # Các hằng số dùng chung trong toàn dự án
+│   └── utils/           # Các hàm tiện ích (helper functions)
+├── guiline.txt          # Ghi chú hoặc guideline nội bộ
+├── index.ts             # Entry point khởi chạy ứng dụng
+└── type.d.ts            # Định nghĩa custom types cho TypeScript
+
 ```
 
-Server chạy tại: `http://localhost:8080`
+## TechStack
 
----
+### Core
 
-## 🔗 API
+- NodeJS 18
+- TypeScript 5.8.3
+- tsc-alias 1.8.16 - Hỗ trợ alias path sau khi biên dịch typescript
 
-| Endpoint | Method | Input | Output |
-|----------|--------|-------|--------|
-| `/health` | GET | — | `{"status":"ok"}` |
-| `/api/...` | POST | `{...}` | `{...}` |
+### Tooling & Development
 
-> **Lưu ý:** Bổ sung các endpoint của nhóm vào bảng trên.
+- Nodemon 3.1.10
+- Rimraf 5.0.10
 
----
+### Linting & Formatting
 
-## 📦 CẤU TRÚC
-```
-server/
-├── README.md
-├── app.py (hoặc server.js)
-├── requirements.txt (hoặc package.json)
-├── routes/
-│   └── ...
-└── utils/
-    └── ...
-```
+- Eslint 9.31.0
+- Prettier 3.6.2
+- TypeScript Eslint 8.38.0
+- eslint-config-prettier 10.1.8
+- eslint-plugin-prettier 5.5.3
 
----
+### Enviroment Configuration
 
-## 🧪 TEST
-```bash
-# Test API bằng curl
-curl http://localhost:8080/health
-```
+- dotenv
 
----
+## npm scripts
 
-## 📝 GHI CHÚ
-
-- Port mặc định: **8080**
-- Có thể thay đổi trong file `.env` hoặc config
+- `npm run dev`: chạy ứng dụng ở chế độ phát triển với nodemon
+- `npm run build`: Xóa thư mục `dist`, biên dịch TypeScript và xử lý alias với `tsc-alias`
+- `npm start`: Khởi chạy ứng dụng từ thư mục `dist` (production mode)
+- `npm run lint`: Kiểm tra lỗi với `ESLint`
+- `npm run lint:fix`: Tự động sửa lỗi ESLint có thể fix được
+- `npm run prettier`: Kiểm tra định dạng mã nguồn theo cấu hình `Prettier`
+- `npm run prettier`: Kiểm tra định dạng mã nguồn theo cấu hình `Prettier`
+- `npm run prettier:fix`: Format lại toàn bộ mã nguồn theo chuẩn của `Prettier`
