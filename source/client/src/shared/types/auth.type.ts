@@ -1,3 +1,8 @@
+enum Status {
+  ONLINE = 'online',
+  OFFLINE = 'offline'
+}
+
 interface LoginRequest {
   username: string
   password: string
@@ -5,8 +10,23 @@ interface LoginRequest {
 
 interface LoginResponse {
   access_token: string
-  refresh_token: string
-  login_at: string
+  user_info: {
+    id: string
+    username: string
+    status: Status
+    lastSeen: Date
+  }
 }
 
-export type { LoginRequest, LoginResponse }
+interface RegisterRequest {
+  username: string
+  password: string
+  confirm_password: string
+}
+
+interface RequestResponse {
+  id: string
+  username: string
+}
+
+export type { LoginRequest, LoginResponse, RegisterRequest, RequestResponse }

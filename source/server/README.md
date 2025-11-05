@@ -1,23 +1,24 @@
-# Base dự NodeJS
+# Introduction
 
-A base project nodejs backend
+Networking Project Backend
 
 ## Project Structure
 
 ```
-
 src/
-├── controllers/         # Xử lý logic của các API, gọi tới services
-├── middlewares/         # Các middleware cho Express (xác thực, bắt lỗi, v.v.)
-├── models/              # Định nghĩa schema/data models (ORM hoặc thuần)
-├── routes/              # Định nghĩa các endpoint và ánh xạ controller tương ứng
-├── services/            # Chứa logic xử lý nghiệp vụ (business logic)
+├── controllers/         # Handle API logic, call services
+├── middlewares/         # Express middlewares (authentication, error handling, etc.)
+├── models/              # Define schema/data models (ORM or plain)
+├── routes/              # Define endpoints and map to corresponding controllers
+├── services/            # Contain business logic
+├── sockets/             # Handle WebSocket connections and logic (e.g., Socket.IO)
+├── config/              # Configuration files for the server, DB, environment, etc.
 ├── shared/
-│   ├── constants/       # Các hằng số dùng chung trong toàn dự án
-│   └── utils/           # Các hàm tiện ích (helper functions)
-├── guiline.txt          # Ghi chú hoặc guideline nội bộ
-├── index.ts             # Entry point khởi chạy ứng dụng
-└── type.d.ts            # Định nghĩa custom types cho TypeScript
+│   ├── constants/       # Common constants used throughout the project
+│   └── utils/           # Utility functions (helper functions)
+├── guiline.txt          # Internal notes or project guidelines
+├── index.ts             # Entry point to start the application
+└── type.d.ts            # Define custom types for TypeScript
 
 ```
 
@@ -27,7 +28,8 @@ src/
 
 - NodeJS 18
 - TypeScript 5.8.3
-- tsc-alias 1.8.16 - Hỗ trợ alias path sau khi biên dịch typescript
+- tsc-alias 1.8.16
+- socket.io
 
 ### Tooling & Development
 
@@ -48,11 +50,10 @@ src/
 
 ## npm scripts
 
-- `npm run dev`: chạy ứng dụng ở chế độ phát triển với nodemon
-- `npm run build`: Xóa thư mục `dist`, biên dịch TypeScript và xử lý alias với `tsc-alias`
-- `npm start`: Khởi chạy ứng dụng từ thư mục `dist` (production mode)
-- `npm run lint`: Kiểm tra lỗi với `ESLint`
-- `npm run lint:fix`: Tự động sửa lỗi ESLint có thể fix được
-- `npm run prettier`: Kiểm tra định dạng mã nguồn theo cấu hình `Prettier`
-- `npm run prettier`: Kiểm tra định dạng mã nguồn theo cấu hình `Prettier`
-- `npm run prettier:fix`: Format lại toàn bộ mã nguồn theo chuẩn của `Prettier`
+- `npm run dev`: Run the application in development mode with `nodemon`
+- `npm run build`: Clear the `dist` directory, compile TypeScript, and handle path aliases with `tsc-alias`
+- `npm start`: Start the application from the `dist` directory (production mode)
+- `npm run lint`: Check for code errors and style issues with `ESLint`
+- `npm run lint:fix`: Automatically fix fixable `ESLint`errors
+- `npm run prettier`: Check source code formatting based on `Prettier` configuration
+- `npm run prettier:fix`: Format all source code according to the `Prettier` standard

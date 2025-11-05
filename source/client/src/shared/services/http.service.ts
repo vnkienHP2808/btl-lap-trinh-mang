@@ -4,42 +4,49 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig
 } from 'axios'
+import { HTTP_STATUS, type ApiResponse } from '../types/http.type'
+import type { LoginResponse } from '../types/auth.type'
+import storageService from './storage.service'
 
 class _Http {
   private readonly instance: AxiosInstance
-
+  private access_token: string
   constructor() {
+    this.access_token = storageService.getAccessTokenFromLS()
     this.instance = axios.create({
-      baseURL: import.meta.env.VITE_BACKEND_URL, // thường sẽ là localhost:8080//api/v1/
+      baseURL: import.meta.env.VITE_BACKEND_URL,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
       }
     })
 
-    // Config Request Interceptor
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Có thể thêm token vào đây
-        // const token = localStorage.getItem('token')
-        // if (token) {
-        //   config.headers.Authorization = `Bearer ${token}`
-        // }
+        if (this.access_token && config.headers) {
+          config.headers.authorization = `Bearer ${this.access_token}`
+        }
         return config
       },
       (error) => Promise.reject(error)
     )
 
-    // Config Response Interceptor
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
+        const { url } = response.config
+        if (url === 'api/user/login' && response.status === HTTP_STATUS.OK) {
+          const data = response.data as ApiResponse<LoginResponse>
+          this.access_token = data.data!.access_token
+          storageService.set('accessToken', this.access_token)
+          storageService.set('profile', JSON.stringify(data.data!.user_info))
+        }
         return response
       },
       (error) => {
-        // Xử lý lỗi response
-        if (error.response?.status === 401) {
-          // Redirect to login hoặc refresh token
-          console.log('Unauthorized access')
+        console.log('Interceptor bắt lỗi:', error.response?.status, error.config?.url)
+        console.log('error', error)
+        if (error.response?.status === HTTP_STATUS.UNAUTHORIZED || error.response?.status === HTTP_STATUS.FORBIDDEN) {
+          storageService.clear()
         }
         return Promise.reject(error)
       }
@@ -49,7 +56,7 @@ class _Http {
    * @param T: định nghĩa kiểu mà API sẽ trả về ( xem ví dụ)
    * @param url: đường dãn API
    * @param config
-   * @returns
+   * @return
    * Ví dụ sử dụng
    * const response = await http.get<ApiResponse<User[]>>('/users')
    * =============================================================
@@ -92,7 +99,10 @@ class _Http {
   }
 
   post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-    return this.instance.post(url, data, config)
+    return this.instance.post(url, data, {
+      ...config,
+      validateStatus: (status) => status >= 200 && status < 500
+    })
   }
 
   put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
