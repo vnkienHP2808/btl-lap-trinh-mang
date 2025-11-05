@@ -6,6 +6,7 @@ import './models/Message'
 import './models/Conversation'
 import cors from 'cors'
 import { userRouter } from './routes/user.routes'
+import { conversationRouter } from './routes/conversation.routes'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -17,6 +18,7 @@ app.use(
 
 app.use(express.json())
 app.use('/api/user', userRouter)
+app.use('/api/conversations', conversationRouter)
 
 const startServer = async () => {
   await connectDB()

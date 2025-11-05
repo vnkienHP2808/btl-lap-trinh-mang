@@ -4,6 +4,7 @@ import HTTPStatus from '~/shared/constants/httpStatus'
 import logger from '~/shared/utils/log'
 import * as jwt from 'jsonwebtoken'
 import { addToBlacklist } from '~/services/jwt.service'
+import { AuthRequest } from '~/shared/types/util.type'
 
 const test = (req: Request, res: Response) => {
   res.json({ message: 'OK' })
@@ -150,20 +151,15 @@ const logout = async (req: Request, res: Response) => {
       })
     }
 
-    // Thêm token của user vào blacklist
     addToBlacklist(token, payload.exp)
 
-    // do đăng xuất nên cho qua "offline"
     if (payload.id) {
-      // lấy từ payload nhưng kém an toàn hơn
       await User.findByIdAndUpdate(payload.id, {
         status: 'offline',
         lastSeen: new Date()
       })
-      logger.info(`User Id ${payload.id} đã cập nhật status: offline`)
+      logger.info(`User [${payload.username}] đã cập nhật status: offline`)
     }
-
-    logger.info(`Token đã thêm vào Blacklist. Đăng xuất thành công.`)
 
     return res.status(HTTPStatus.OK).json({
       status: HTTPStatus.OK,
@@ -179,6 +175,34 @@ const logout = async (req: Request, res: Response) => {
   }
 }
 
-const getListUser = async (req: Request, res: Response) => {}
+const getListUser = async (req: AuthRequest, res: Response) => {
+  logger.info('Lấy danh sách người dùng')
+  try {
+    const payload = req.user
+    const currentUserId = (payload as jwt.JwtPayload).id
+    const listUser = await User.find({ _id: { $ne: currentUserId } }).select('username status lastSeen, createdAt')
+    if (listUser.length) {
+      return res.status(HTTPStatus.OK).json({
+        status: HTTPStatus.OK,
+        message: 'Lấy danh sách người dùng thành công',
+        data: listUser
+      })
+    } else {
+      return res.status(HTTPStatus.NO_CONTENT).json({
+        status: HTTPStatus.NO_CONTENT,
+        message: 'Danh sách người dùng hiện đang trống',
+        data: listUser
+      })
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
+    logger.error('Lỗi không thể lấy danh sách người dùng: ', e)
+    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
+      status: HTTPStatus.INTERNAL_SERVER_ERROR,
+      message: 'Lỗi server',
+      data: null
+    })
+  }
+}
 
 export { test, register, login, logout, getListUser }

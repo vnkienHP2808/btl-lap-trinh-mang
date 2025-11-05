@@ -46,4 +46,4 @@ function arrayLimit(val: Array<number>) {
 ConversationSchema.index({ participants: 1 }, { unique: true })
 const Conversation = mongoose.model('Conversation', ConversationSchema)
 
-module.exports = Conversation
+export default Conversation
