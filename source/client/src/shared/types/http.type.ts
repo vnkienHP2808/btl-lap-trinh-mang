@@ -1,6 +1,5 @@
 interface ApiResponse<T> {
-  success: boolean
-  statusCode: string
+  status: string
   data: T
   message: string
 }

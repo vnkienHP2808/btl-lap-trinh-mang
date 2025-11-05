@@ -1,16 +1,39 @@
-import BaseLayout from '@/app/layout/base-layout'
 import React from 'react'
-import AuthForm from '../components/auth-form'
 import useRegisterHook from './useRegisterHook'
+import { Button, Form, Input } from 'antd'
+import { useNavigate } from 'react-router-dom'
+
+const { Item: FormItem } = Form
 
 const RegisterPage: React.FC = () => {
-  const { handleRegister } = useRegisterHook()
+  const { handleRegister, form } = useRegisterHook()
+  const navigate = useNavigate()
   return (
-    <BaseLayout>
-      <div className='h-full w-full'>
-        <AuthForm title='Đăng Ký Tài Khoản' isRegister={true} onSubmit={handleRegister} />
+    <div className='flex h-screen items-center justify-center bg-gray-50'>
+      <div className='flex w-[400px] flex-col items-center justify-center rounded-2xl border border-gray-300 bg-white p-6 shadow-lg'>
+        <Form form={form} layout='vertical' className='w-full'>
+          <FormItem label='Tài khoản' name='username'>
+            <Input className='!w-full' />
+          </FormItem>
+
+          <FormItem label='Mật khẩu' name='password'>
+            <Input.Password className='!w-full' />
+          </FormItem>
+
+          <FormItem label='Nhập lại mật khẩu' name='confirm_password'>
+            <Input.Password className='!w-full' />
+          </FormItem>
+
+          <Button type='primary' block onClick={handleRegister}>
+            Đăng ký tài khoản
+          </Button>
+
+          <div className='mt-2 cursor-pointer text-center' onClick={() => navigate('/login')}>
+            Đã có tài khoản? Click vào đây để đăng nhấp
+          </div>
+        </Form>
       </div>
-    </BaseLayout>
+    </div>
   )
 }
 

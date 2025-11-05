@@ -1,74 +1,83 @@
-# MODULE CLIENT
+## Introduction
 
-> 📘 *Sinh viên mô tả phần **client** tại đây. Điền đầy đủ theo framework và bài toán của nhóm.*
+Networking Project Frontend
 
----
+## Project Structure
 
-## 🎯 MỤC TIÊU
-
-Client chịu trách nhiệm:
-- Gửi yêu cầu đến server
-- Hiển thị kết quả cho người dùng
-- Cung cấp giao diện tương tác
-
----
-
-## ⚙️ CÔNG NGHỆ SỬ DỤNG
-
-| Thành phần | Công nghệ |
-|------------|-----------|
-| Ngôn ngữ | Node.js / Python / Java / ... |
-| Thư viện chính | Axios / Requests / ... |
-| Giao thức | HTTP / WebSocket / ... |
-
----
-
-## 🚀 HƯỚNG DẪN CHẠY
-
-### Cài đặt
-```bash
-# Ví dụ với Node.js
-npm install
-
-# Hoặc với Python
-pip install -r requirements.txt
+```
+src/
+├── app/
+│   ├── layout/        # Layout
+│   ├── pages/         # Page components and routing
+│   ├── styles/        # Global styles and theme
+│   ├── App.tsx        # Root component
+│   ├── index.tsx      # Entry point
+│   └── router.tsx     # Router configuration
+├── assets/            # Static assets (images, fonts, etc.)
+│   ├── fonts/         # Config fonts for project
+│   └── images/        # Config images for project
+├── services/          # API services and external integrations
+└── shared/            # Shared modules and utilities
+    ├── components/    # Reusable UI components
+    ├── constants/     # Application constants
+    ├── contexts/      # Global context for project (ex: themeContext, langueContext,loadingContext..)
+    ├── services/      # Common service for project (ex: StorageService, Config Interceptor for request and response)
+    ├── hooks/         # Common hooks for project (ex: useDarkMode, useLoading,...)
+    ├── types/         # TypeScript type definitions
+    └── utils/         # Utility functions
 ```
 
-### Chạy chương trình
-```bash
-# Ví dụ
-node main.js
-# hoặc
-python client.py
-```
+### HTTP Client
 
-### Cấu hình (nếu cần)
-- Server URL: `http://localhost:8080`
-- Có thể thay đổi trong file `config.js` hoặc `.env`
+- Axios 1.7.9
 
----
+## Available Scripts
 
-## 📦 CẤU TRÚC
-```
-client/
-├── README.md
-├── main.js (hoặc client.py)
-├── config.js
-└── lib/
-    └── helper.js
-```
+- `npm run dev` - Start development server
+- `npm run prod` - Start production server
+- `npm run build` - Build for development
 
----
+## Technology Stack
 
-## 💡 SỬ DỤNG
-```bash
-# Ví dụ gửi request
-node main.js --input "data"
-```
+### Core
 
----
+- React 18.3.1
+- TypeScript 5.6.2
+- Vite 6.0.5
 
-## 📝 GHI CHÚ
+### State Management & Routing
 
-- Đảm bảo server đã chạy trước khi khởi động client
-- Mặc định kết nối đến `localhost:8080`
+- React Router DOM 7.1.5
+- Redux Toolkit
+
+### UI components
+
+- antd 5.24.2
+
+### Styling
+
+- TailwindCSS 3.4.17
+- PostCSS 8.5.1
+- Autoprefixer 10.4.20
+
+### Form Handling & Validation
+
+- React Hook Form 7.55.0
+
+### Development Tools
+
+- ESLint 9.17.0
+- Prettier 3.4.2
+- TypeScript ESLint 8.18.2
+- Various ESLint plugins and configurations
+
+## Architecture Overview
+
+This project follows a modular architecture with clear separation of concerns:
+
+- **app/**: Contains application-specific code and configuration
+- **shared/**: Houses reusable modules and utilities
+- **components/**: Reusable UI components following atomic design principles
+- **services/**: API integrations and external service handlers
+- **hooks/**: Custom React hooks for shared logic
+- **utils/**: Helper functions and utilities

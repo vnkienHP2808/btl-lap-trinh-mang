@@ -1,3 +1,4 @@
+import clientService from '@/services/client.service'
 import { useNavigate } from 'react-router-dom'
 
 const useHeaderHook = () => {
@@ -6,6 +7,10 @@ const useHeaderHook = () => {
   const goToRegister = () => navigate('/register')
   const goToLogin = () => navigate('/login')
   const handleLogout = () => console.log('Handling logout...')
-  return { isLoggedIn, goToRegister, goToLogin, handleLogout, navigate }
+  const test = async () => {
+    const response = await clientService.test()
+    console.log(response)
+  }
+  return { isLoggedIn, goToRegister, goToLogin, handleLogout, navigate, test }
 }
 export default useHeaderHook
