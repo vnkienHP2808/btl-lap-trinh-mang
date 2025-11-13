@@ -18,40 +18,47 @@ const MessageBubble = ({ message }: MessageBubbleProp) => {
   const fileUrl = buildAbsoluteUrl(message.media?.url)
 
   return (
-    <div className={`flex items-end space-x-2 ${message.isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div
+      className={`flex items-end gap-2 ${message.isMe ? 'flex-row-reverse justify-start' : 'flex-row justify-start'}`}
+    >
       {!message.isMe && <Avatar icon={<UserOutlined />} size='small' style={{ backgroundColor: '#1890ff' }} />}
 
-      <div className='flex max-w-[70%] flex-col'>
+      <div className={`flex max-w-[70%] flex-col ${message.isMe ? 'items-end' : 'items-start'}`}>
         {!message.isMe && <span className='mb-1 text-xs text-gray-500'>{message.senderId.username}</span>}
 
-        <div className={`rounded-lg px-4 py-2 ${message.isMe ? 'bg-blue-500 text-white' : 'border border-gray-200 bg-white text-gray-800'}`}>
+        <div
+          className={`rounded-lg px-4 py-2 ${message.isMe ? 'bg-blue-500 text-white' : 'border border-gray-200 bg-white text-gray-800'}`}
+        >
           {/* Nội dung */}
           {isVideo ? (
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <video
                 src={fileUrl}
                 controls
                 playsInline
-                crossOrigin="anonymous"   // để CORS rõ ràng cho video
-                preload="metadata"
-                className="max-h-64 w-full rounded-md"
+                crossOrigin='anonymous' // để CORS rõ ràng cho video
+                preload='metadata'
+                className='max-h-64 w-full rounded-md'
               />
-              <div className="flex items-center justify-between text-xs">
-                <span className="truncate">
-                  {message.media?.originalName || message.content}
-                </span>
-                <a href={fileUrl} download className="underline">
+              <div className='flex items-center justify-between text-xs'>
+                <span className='truncate'>{message.media?.originalName || message.content}</span>
+                <a href={fileUrl} download className='text-white underline hover:text-blue-100'>
                   Tải xuống
                 </a>
               </div>
             </div>
           ) : message.media?.url ? (
             // fallback: file khác loại -> vẫn để link như cũ
-            <a href={fileUrl} target="_blank" rel="noreferrer" className="underline">
-              {message.media.url.split('/').pop()}
+            <a
+              href={fileUrl}
+              target='_blank'
+              rel='noreferrer'
+              className={`${message.isMe ? '!text-white' : '!text-black'} underline hover:text-blue-100`}
+            >
+              📂{message.media.url.split('/').pop()}
             </a>
           ) : (
-            <p className="break-words whitespace-pre-wrap">{message.content}</p>
+            <p className='break-words whitespace-pre-wrap'>{message.content}</p>
           )}
 
           <p className={`mt-1 text-xs ${message.isMe ? 'text-blue-100' : 'text-gray-400'}`}>
