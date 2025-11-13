@@ -1,118 +1,199 @@
-# BÀI TẬP LỚN: LẬP TRÌNH MẠNG  
+# BÀI TẬP LỚN: LẬP TRÌNH MẠNG
 
-## [Tên dự án của nhóm]
+## Xây dựng ứng dụng Chat-Realtime
 
-> 📘 *Mẫu README này là khung hướng dẫn. Sinh viên chỉ cần điền thông tin của nhóm và nội dung dự án theo từng mục.*
+> 📘 _Mẫu README này là khung hướng dẫn. Sinh viên chỉ cần điền thông tin của nhóm và nội dung dự án theo từng mục._
 
 ---
 
 ## 🧑‍💻 THÔNG TIN NHÓM
 
-| STT | Họ và Tên | MSSV | Email | Đóng góp |
-|-----|-----------|------|-------|----------|
-| 1 | Nguyễn Văn A | 20IT001 | a@example.com | ... |
-| 2 | Trần Thị B | 20IT002 | b@example.com | ... |
-| 3 | Lê Văn C | 20IT003 | c@example.com | ... |
+| STT | Họ và Tên         | MSSV       | Email                             | Đóng góp                                                   |
+| --- | ----------------- | ---------- | --------------------------------- | ---------------------------------------------------------- |
+| 1   | Trịnh Quang Lâm   | B22DCCN482 | lamtq.b22cn482@stu.ptit.edu.vn    | Xây dựng tính năng gửi video thông qua giao thức websocket |
+| 2   | Vũ Nhân Kiên      | B22DCCN434 | kienvn.b22cn434@stu.ptit.edu.vn   | Xây dựng tính năng gửi file thông qua giao thức websocket  |
+| 3   | Cao Thị Thu Hương | B22DCCN422 | huongctt.b22cn422@stu.ptit.edu.vn | Xây dựng tính năng chat cơ bản                             |
 
-**Tên nhóm:** Nhóm 01 – Lập trình mạng  
-**Chủ đề đã đăng ký:** (…)
+**Tên nhóm:** Nhóm 19 – Lập trình mạng
 
 ---
 
 ## 🧠 MÔ TẢ HỆ THỐNG
 
-> Mô tả tổng quan hệ thống mà nhóm triển khai.
-
-Ví dụ:
-> Hệ thống bao gồm **server** xử lý yêu cầu và **client** gửi yêu cầu đến server qua giao thức HTTP.  
-> Server cung cấp API cho phép tính toán đơn giản hoặc truyền dữ liệu.  
-> Client có thể là chương trình CLI, web hoặc ứng dụng desktop.
+> Hệ thống là một ứng dụng chat thời gian thực, cho phép người dùng trao đổi tin nhắn và chia sẻ dữ liệu.
+> Ứng dụng gồm server xử lý yêu cầu và client giao tiếp với server thông qua giao thức WebSocket.
+> Server chịu trách nhiệm quản lý người dùng, xử lý tin nhắn và truyền dữ liệu thời gian thực,
+> trong khi client là một ứng dụng web hỗ trợ đăng ký, đăng nhập, nhắn tin, gửi file và gửi video.
 
 **Cấu trúc logic tổng quát:**
+
 ```
-client  <-->  server  <-->  (database / service nếu có)
+client  <-->  server  <-->  database
 ```
 
 **Sơ đồ hệ thống:**
 
-![System Diagram](./statics/diagram.png)
+![System Diagram](./static/diagram.png)
 
 ---
 
 ## ⚙️ CÔNG NGHỆ SỬ DỤNG
 
-> Liệt kê công nghệ, framework, thư viện chính mà nhóm sử dụng.
-
-| Thành phần | Công nghệ | Ghi chú |
-|------------|-----------|---------|
-| Server | Python 3.11 + Flask | REST API |
-| Client | Node.js 20 + Axios | Giao tiếp HTTP |
-| Database | SQLite | Lưu trữ dữ liệu tạm thời |
-| Triển khai | Docker | (nếu có) |
+| Thành phần | Công nghệ                                         | Ghi chú                               |
+| ---------- | ------------------------------------------------- | ------------------------------------- |
+| Server     | NodeJS 20 + ExpressJS + socket.io                 | Xử lý logic, quản lý kết nối realtime |
+| Client     | NodeJS 20 + ReactJS 18 + socket.io-client + Axios | Giao tiếp WebSocket + HTTP            |
+| Database   | MongooDB                                          | Lưu trữ dữ liệu tạm thời              |
 
 ---
 
 ## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN
 
 ### 1. Clone repository
+
 ```bash
-git clone <repository-url>
+git clone https://github.com/jnp2018/mid-project-482422434.git assignment-network-project
 cd assignment-network-project
 ```
 
 ### 2. Chạy server
+
 ```bash
 cd source/server
-# Các lệnh để khởi động server
+npm install # cài đặt các thư viện cần thiết
+npm run dev # chạy ứng dụng với môi trường development
 ```
 
 ### 3. Chạy client
+
 ```bash
 cd source/client
-# Các lệnh để khởi động client
+npm install # cài đặt các thư viện cần thiết
+npm run dev # chạy ứng dụng với môi trường development
 ```
 
 ### 4. Kiểm thử nhanh
+
+Truy cập tại địa chỉ:
+
 ```bash
-# Các lệnh test
+http://localhost:3000
 ```
 
 ---
 
 ## 🔗 GIAO TIẾP (GIAO THỨC SỬ DỤNG)
 
-| Endpoint | Protocol | Method | Input | Output |
-|----------|----------|--------|-------|--------|
-| `/health` | HTTP/1.1 | GET | — | `{"status": "ok"}` |
-| `/compute` | HTTP/1.1 | POST | `{"task":"sum","payload":[1,2,3]}` | `{"result":6}` |
+### HTTP REST API
+
+| Endpoint                            | Protocol | Method | Input                                                                        | Output                                                      |
+| ----------------------------------- | -------- | ------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/api/user/login`                   | HTTP/1.1 | POST   | `{ username: string, password: string }`                                     | `{ status: number, message: string, data: Object }`         |
+| `/api/user/register`                | HTTP/1.1 | POST   | `{ username: string, password: string, confirmPassword: string }`            | `{ status: number, message: string, data: Object }`         |
+| `/api/conversations/users`          | HTTP/1.1 | GET    | Headers: `Authorization: Bearer <token>`                                     | `{ status: number, message: string, data: Array<User> }`    |
+| `/api/conversations/find-or-create` | HTTP/1.1 | POST   | `{ username: string }`<br>Headers: `Authorization: Bearer <token>`           | `{ status: number, message: string, data: Conversation }`   |
+| `/api/message/:conversationId`      | HTTP/1.1 | GET    | Params: `conversationId: string`<br>Headers: `Authorization: Bearer <token>` | `{ status: number, message: string, data: Array<Message> }` |
+
+### WebSocket Events
+
+**Connection:** `ws://localhost:8080`
+
+**Authentication:** Client phải gửi token qua query parameter hoặc handshake headers
+
+| Event                   | Direction       | Payload                                                                                                                   | Response/Broadcast                                                                |
+| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `connect`               | Client → Server | Query: `{ token: string }`                                                                                                | Kết nối WebSocket được thiết lập                                                  |
+| `join-conversation`     | Client → Server | `{ conversationId: string }`                                                                                              | Client join vào room của conversation                                             |
+| `leave-conversation`    | Client → Server | `{ conversationId: string }`                                                                                              | Client leave room của conversation                                                |
+| `send-message`          | Client → Server | `{ receiverUsername: string, content: string, type: "text" }`                                                             | Callback: `{ success: boolean, message: Object }`<br>Broadcast: `receive-message` |
+| `receive-message`       | Server → Client | `{ message: { _id: string, content: string, senderId: Object, type: string, createdAt: Date }, conversationId: string }`  | Client nhận tin nhắn mới                                                          |
+| `file-metadata`         | Client → Server | `{ fileId: string, originalName: string, size: number, mimeType: string, totalChunks: number, receiverUsername: string }` | Callback: `{ success: boolean }`                                                  |
+| `file-chunk`            | Client → Server | `{ fileId: string, chunkIndex: number, data: string (base64) }`                                                           | Callback: `{ success: boolean, chunkIndex: number }`                              |
+| `file-upload-complete`  | Client → Server | `{ fileId: string, receiverUsername: string }`                                                                            | Callback: `{ success: boolean, message: Object }`<br>Broadcast: `receive-message` |
+| `video-metadata`        | Client → Server | `{ fileId: string, originalName: string, size: number, mimeType: string, totalChunks: number, receiverUsername: string }` | Callback: `{ success: boolean }`                                                  |
+| `video-chunk`           | Client → Server | `{ fileId: string, chunkIndex: number, totalChunks: number, data: ArrayBuffer \| string (base64) }`                       | Callback: `{ success: boolean, chunkIndex: number }`                              |
+| `video-upload-complete` | Client → Server | `{ fileId: string, receiverUsername: string }`                                                                            | Callback: `{ success: boolean, message: Object }`<br>Broadcast: `receive-message` |
+| `disconnect`            | Client → Server | —                                                                                                                         | Ngắt kết nối, cleanup resources                                                   |
 
 ---
 
 ## 📊 KẾT QUẢ THỰC NGHIỆM
 
-> Đưa ảnh chụp kết quả hoặc mô tả log chạy thử.
+![Demo Result](./static/demo-1.png)
 
-![Demo Result](./statics/result.png)
+![Demo Result](./static/demo-2.png)
+
+![Demo Result](./static/demo-3.png)
 
 ---
 
 ## 🧩 CẤU TRÚC DỰ ÁN
+
 ```
 assignment-network-project/
 ├── README.md
 ├── INSTRUCTION.md
 ├── statics/
 │   ├── diagram.png
-│   └── dataset_sample.csv
+│   ├── demo-1.png
+│   ├── demo-2.png
+│   └── demo-3.png
 └── source/
-    ├── .gitignore
-    ├── client/
-    │   ├── README.md
-    │   └── (client source files...)
     ├── server/
-    │   ├── README.md
-    │   └── (server source files...)
-    └── (các module khác nếu có)
+    │   ├── node_modules
+    │   ├── src/
+    │   │   ├── config
+    │   │   ├── controllers
+    │   │   ├── middlewares
+    │   │   ├── models
+    │   │   ├── routes
+    │   │   ├── services
+    │   │   ├── shared
+    │   │   ├── sockets
+    │   │   ├── index.ts
+    │   │   └── type.d.ts
+    │   ├── uploads
+    │   ├── .editorconfig
+    │   ├── .gitignore
+    │   ├── .prettierignore
+    │   ├── .prettierrc
+    │   ├── eslint.config.mjs
+    │   ├── nodemon.json
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   └── tsconfig.json
+    └── client/
+        ├── node_modules
+        ├── public
+        ├── src/
+        │   ├── app/
+        │   │   ├── layout
+        │   │   ├── pages
+        │   │   ├── styles
+        │   │   ├── index.tsx
+        │   │   └── router.tsx
+        │   ├── services
+        │   ├── shared/
+        │   │   ├── components
+        │   │   ├── constants
+        │   │   ├── context
+        │   │   ├── hook
+        │   │   ├── services
+        │   │   ├── types
+        │   │   └── utils
+        │   └── vite-env.d.ts
+        ├── .editorconfig
+        ├── .gitignore
+        ├── .prettierignore
+        ├── .perttierrc
+        ├── eslint.config.js
+        ├── index.html
+        ├── package-lock.json
+        ├── packge.json
+        ├── tsconfig.app.json
+        ├── tsconfig.json
+        ├── tsconfig.node.json
+        └── vite.config.ts
 ```
 
 ---
@@ -121,10 +202,10 @@ assignment-network-project/
 
 > Nêu ý tưởng mở rộng hoặc cải tiến hệ thống.
 
-- [ ] Cải thiện giao diện người dùng
-- [ ] Thêm tính năng xác thực và phân quyền
-- [ ] Tối ưu hóa hiệu suất
-- [ ] Triển khai trên cloud
+- Thêm tính năng nhóm chat và gọi video để người dùng có thể trò chuyện theo nhóm hoặc gọi trực tiếp qua trình duyệt.
+- Tích hợp chatbot hỗ trợ tự động, giúp gợi ý phản hồi nhanh hoặc trả lời các câu hỏi cơ bản.
+- Bổ sung thông báo đẩy (push notification) khi có tin nhắn mới hoặc tệp được gửi đến người dùng.
+- Lưu trữ tin nhắn trên cloud và đồng bộ đa thiết bị, giúp người dùng truy cập lịch sử trò chuyện ở mọi nơi.
 
 ---
 
@@ -137,4 +218,4 @@ assignment-network-project/
 
 ## 📚 TÀI LIỆU THAM KHẢO
 
-> (Nếu có) Liệt kê các tài liệu, API docs, hoặc nguồn tham khảo đã sử dụng.
+> [1] https://socket.io/docs/v4
