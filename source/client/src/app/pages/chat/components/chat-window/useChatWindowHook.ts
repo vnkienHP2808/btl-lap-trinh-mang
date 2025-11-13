@@ -10,7 +10,8 @@ interface MessageWithIsMe extends Message {
 }
 
 const useChatWindowHook = () => {
-  const { conversationId } = useParams<{ conversationId: string }>()
+  const { conversationId } = useParams<{ conversationId: string }>() // cái này hiện tại là id của thằng nhận nhưng lại đang nhầm là id conversation.
+  // giờ sửa lại. Từ
   const location = useLocation()
   const { username: receiverUsername, userId: receiverId, status } = location.state || {}
 
@@ -28,8 +29,9 @@ const useChatWindowHook = () => {
 
     try {
       setLoading(true)
+      console.log(`api/messages/${conversationId}`)
       const response = await clientService.getAllMessageOfConversation(conversationId)
-
+      console.log('response chat window:::', response)
       if (response.status === 200) {
         const messagesData = response.data.data.map((msg: Message) => ({
           ...msg,

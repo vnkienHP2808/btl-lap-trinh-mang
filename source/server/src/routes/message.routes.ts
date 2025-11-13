@@ -3,7 +3,7 @@ import express from 'express'
 export const messageRouter = express.Router()
 
 import { getAllMessageOfConversation } from '~/controllers/message.controller'
-import { authenticateToken } from '~/middlewares/user.middleware'
+import { authenticateToken } from '~/middlewares/user.middlewares'
 
 messageRouter.use(authenticateToken)
 

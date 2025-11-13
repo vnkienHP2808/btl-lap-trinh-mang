@@ -22,7 +22,7 @@ class _ClientService {
   }
 
   async getAllMessageOfConversation(conversationId: string) {
-    const response = await http.get<ApiResponse<Message[]>>(`api/messages/${conversationId}`)
+    const response = await http.get<ApiResponse<Message[]>>(`api/message/${conversationId}`)
     return response
   }
 

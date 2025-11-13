@@ -6,6 +6,7 @@ import { AuthRequest } from '~/shared/types/util.type'
 import * as jwt from 'jsonwebtoken'
 import User from '~/models/User'
 import Message from '~/models/Message'
+import mongoose from 'mongoose'
 
 const getConversationMessage = async (req: AuthRequest, res: Response) => {
   try {
@@ -99,8 +100,7 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
   try {
     const { username: receiverUsername } = req.body
     const senderId = (req.user as jwt.JwtPayload).id
-    logger.info(`User ${senderId} đang tìm hoặc tạo cuộc trò chuyện với ${receiverUsername}`)
-    // Tìm receiver bằng username
+
     const receiver = await User.findOne({ username: receiverUsername })
     if (!receiver) {
       return res.status(404).json({
@@ -108,25 +108,48 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
         error: 'User not found'
       })
     }
-    logger.info(`Tìm thấy người nhận: ${receiver.username} với ID: ${receiver._id}`)
 
-    let conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiver._id] }
+    // Convert sang ObjectId và sort
+    const participant1 = new mongoose.Types.ObjectId(senderId.toString())
+    const participant2 = new mongoose.Types.ObjectId(receiver._id.toString())
+
+    const participantIds = [participant1, participant2].sort((a, b) => a.toString().localeCompare(b.toString()))
+
+    console.log('Looking for conversation with participants:', participantIds)
+
+    // Dùng findOneAndUpdate với upsert
+    const conversation = await Conversation.findOneAndUpdate(
+      { participants: participantIds }, // Match exact array
+      {
+        $setOnInsert: {
+          participants: participantIds,
+          readStatus: [
+            { userId: participantIds[0], lastReadMessageId: null },
+            { userId: participantIds[1], lastReadMessageId: null }
+          ]
+        }
+      },
+      {
+        upsert: true, // Tạo mới nếu không tồn tại
+        new: true, // Trả về document mới
+        setDefaultsOnInsert: true
+      }
+    ).populate('participants', 'username status lastSeen')
+
+    console.log('✅ Conversation created/found:', conversation._id)
+
+    return res.json({
+      success: true,
+      message: 'Tạo cuộc trò chuyện thành công',
+      data: conversation
     })
-      .populate('participants', 'username status lastSeen')
-      .populate('lastMessageId')
-
-    if (!conversation) {
-      conversation = await Conversation.create({
-        participants: [senderId, receiver._id]
-      })
-      await conversation.populate('participants', 'username status lastSeen')
-    }
-    logger.info(`Trả về cuộc trò chuyện giữa ${senderId} và ${receiver._id}`)
-    res.json({ success: true, message: 'Tạo cuộc trò chuyện thành công', data: conversation })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message, data: null })
+    console.error('❌ Error:', error)
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null
+    })
   }
 }
 

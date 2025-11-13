@@ -22,8 +22,8 @@ const ChatWindow = () => {
       {/* Messages area */}
       <div className='flex-1 overflow-y-auto bg-gray-50 p-4'>
         <div className='flex flex-col space-y-4'>
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+          {messages.map((msg, index) => (
+            <div key={index} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
               <MessageBubble message={msg} />
             </div>
           ))}
