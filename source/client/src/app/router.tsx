@@ -3,6 +3,7 @@ import LoginPage from './pages/auth/login-page'
 import RegisterPage from './pages/auth/register-page'
 import NotFoundPage from './pages/not-found'
 import ChatPage from './pages/chat'
+import ChatWindow from './pages/chat/components/chat-window'
 
 const router: RouteObject[] = [
   {
@@ -23,6 +24,16 @@ const router: RouteObject[] = [
       {
         path: '*',
         element: <NotFoundPage />
+      },
+      {
+        path: '/chat',
+        element: <ChatPage />,
+        children: [
+          {
+            path: ':conversationId',
+            element: <ChatWindow />
+          }
+        ]
       }
     ]
   }

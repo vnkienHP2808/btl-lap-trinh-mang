@@ -11,8 +11,12 @@ import storageService from './storage.service'
 class _Http {
   private readonly instance: AxiosInstance
   private access_token: string
+  private username: string
+  private id: string
   constructor() {
     this.access_token = storageService.getAccessTokenFromLS()
+    this.username = storageService.getUsernameFromLS()
+    this.id = storageService.getUserIdFromLS()
     this.instance = axios.create({
       baseURL: import.meta.env.VITE_BACKEND_URL,
       timeout: 10000,
@@ -36,9 +40,14 @@ class _Http {
         const { url } = response.config
         if (url === 'api/user/login' && response.status === HTTP_STATUS.OK) {
           const data = response.data as ApiResponse<LoginResponse>
+          // lấy ra username, token, id lưu vào LS
+          this.username = data.data!.user_info.username
           this.access_token = data.data!.access_token
+          this.id = data.data!.user_info.id
+          console.log(data)
           storageService.set('accessToken', this.access_token)
-          storageService.set('profile', JSON.stringify(data.data!.user_info))
+          storageService.set('userName', this.username)
+          storageService.set('userId', this.id)
         }
         return response
       },
