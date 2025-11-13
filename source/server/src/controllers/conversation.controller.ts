@@ -1,80 +1,22 @@
-import { Request, Response } from 'express'
-import HTTPStatus from '~/shared/constants/httpStatus'
-import logger from '~/shared/utils/log'
+import { Response } from 'express'
 import Conversation from '~/models/Conversation'
 import { AuthRequest } from '~/shared/types/util.type'
 import * as jwt from 'jsonwebtoken'
 import User from '~/models/User'
-import Message from '~/models/Message'
 import mongoose from 'mongoose'
+import logger from '~/shared/utils/log'
 
-const getConversationMessage = async (req: AuthRequest, res: Response) => {
-  try {
-    const payload = req.user
-    const currentUserId = (payload as jwt.JwtPayload).id
-    const currentUser = await User.findOne({ _id: currentUserId }).select('username')
-
-    // Lấy Id người dùng 2
-    const otherUserId = req.params.otherUserId
-    const otherUser = await User.findOne({ _id: otherUserId }).select('username')
-
-    if (!otherUserId) {
-      return res.status(HTTPStatus.BAD_REQUEST).json({
-        status: HTTPStatus.BAD_REQUEST,
-        message: 'Không có ID của người nhận',
-        data: null
-      })
-    }
-
-    logger.info(`Lấy tin nhắn của cuộc hội thoại giữa ${currentUser?.username} và ${otherUser?.username}`)
-
-    // Tìm cuộc hội thoại dựa trên 2 ID, dùng '$all' để chắc chắn 2 ID phải trong 'participants'
-    let conversation = await Conversation.findOne({
-      participants: { $all: [currentUserId, otherUserId] }
-    })
-
-    if (!conversation) {
-      logger.info(
-        `Chưa tồn tại cuộc hội thoại giữa ${currentUser?.username} và ${otherUser?.username}. Tạo cuộc hội thoại mới`
-      )
-      conversation = new Conversation({
-        participants: [currentUserId, otherUserId],
-        readStatus: [
-          { userId: currentUserId, lastReadMessageId: null },
-          { userId: otherUserId, lastReadMessageId: null }
-        ]
-      })
-      await conversation.save()
-
-      return res.status(HTTPStatus.OK).json({
-        status: HTTPStatus.OK,
-        message: 'Tạo cuộc trò chuyện thành công',
-        data: []
-      })
-    }
-
-    const conversationId = conversation._id
-    const messages = await Message.find({ conversationId: conversationId })
-      .sort({ timestamp: -1 }) //sắp xếp tin nhắn từ mới nhất đến cũ nhất
-      .populate('senderId', 'username') // lấy thêm username người gửi
-
-    return res.status(HTTPStatus.OK).json({
-      status: HTTPStatus.OK,
-      message: `Lấy thành công hội thoại giữa ${currentUser?.username} và ${otherUser?.username}`,
-      data: messages
-    })
-  } catch (error: any) {
-    logger.error('Lỗi khi lấy tin nhắn: ', error)
-    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
-      status: HTTPStatus.INTERNAL_SERVER_ERROR,
-      message: 'Lỗi Server. Không thể lấy tin nhắn'
-    })
-  }
-}
-
+/**
+ * Lấy tất cả các cuộc hội thoại mà người dùng có ID tham gia (hàm này để test postman chứ không dùng ở FE)
+ * @param req: AuthRequest
+ * @param res: Response
+ * @returns Danh sách các cuộc hội thoại
+ */
 const getAllConversationMessages = async (req: AuthRequest, res: Response) => {
   try {
     const userId = (req.user as jwt.JwtPayload).id
+    const username = (req.user as jwt.JwtPayload).username
+    logger.info(`Lấy tất cả cuộc hội hoại của người dùng ${username}`)
 
     const conversations = await Conversation.find({
       participants: userId
@@ -96,7 +38,13 @@ const getAllConversationMessages = async (req: AuthRequest, res: Response) => {
   }
 }
 
+/**
+ * @param req: AuthRequest
+ * @param res: Response
+ * @returns
+ */
 const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
+  logger.info('Tìm cuộc hội thoại hoặc tạo mới nếu chưa tồn tại')
   try {
     const { username: receiverUsername } = req.body
     const senderId = (req.user as jwt.JwtPayload).id
@@ -114,8 +62,6 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
     const participant2 = new mongoose.Types.ObjectId(receiver._id.toString())
 
     const participantIds = [participant1, participant2].sort((a, b) => a.toString().localeCompare(b.toString()))
-
-    console.log('Looking for conversation with participants:', participantIds)
 
     // Dùng findOneAndUpdate với upsert
     const conversation = await Conversation.findOneAndUpdate(
@@ -136,8 +82,6 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
       }
     ).populate('participants', 'username status lastSeen')
 
-    console.log('✅ Conversation created/found:', conversation._id)
-
     return res.json({
       success: true,
       message: 'Tạo cuộc trò chuyện thành công',
@@ -153,7 +97,14 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
   }
 }
 
+/**
+ * Lấy tất cả người dùng trừ người dùng hiện tại
+ * @param req: AuthRequest
+ * @param res: Response
+ * @returns Danh sách tất cả người dùng trừ người dùng hiện tại
+ */
 const getAllUserExceptCurrent = async (req: AuthRequest, res: Response) => {
+  logger.info('Lấy tất cả người dùng trừ người dùng hiện tại')
   try {
     const currentUserId = (req.user as jwt.JwtPayload).id
 
@@ -168,4 +119,4 @@ const getAllUserExceptCurrent = async (req: AuthRequest, res: Response) => {
   }
 }
 
-export { getConversationMessage, getAllConversationMessages, findOrCreateConversation, getAllUserExceptCurrent }
+export { getAllConversationMessages, findOrCreateConversation, getAllUserExceptCurrent }
