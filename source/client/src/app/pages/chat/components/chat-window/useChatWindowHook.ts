@@ -2,21 +2,22 @@ import clientService from '@/services/client.service'
 import socketService from '@/services/socket.service'
 import useNotificationHook from '@/shared/hook/useNotificationHook'
 import type { Message } from '@/shared/types/chat.type'
-import { HTTP_STATUS } from '@/shared/types/http.type'
+import { readChunkAsBase64 } from '@/shared/utils/readChunkAsBase64'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
-const useChatWindowHook = () => {
-  const { conversationId } = useParams<{ conversationId: string }>()
-  const location = useLocation()
-  const { username: receiverUsername, userId: receiverId, status } = location.state || {}
+const CHUNK_SIZE = 64 * 1024 // 64KB mỗi chunk
 
+const useChatWindowHook = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [uploadingFile, setUploadingFile] = useState(false)
   const [loading, setLoading] = useState(true)
+  const { conversationId } = useParams<{ conversationId: string }>()
+  const location = useLocation()
+  const { username: receiverUsername, userId: receiverId, status } = location.state || {}
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { showError, showSuccess } = useNotificationHook()
+  const { showError } = useNotificationHook()
 
   const currentUsername = localStorage.getItem('userName')
 
@@ -47,7 +48,6 @@ const useChatWindowHook = () => {
   useEffect(() => {
     if (!conversationId) return
 
-    // Load messages
     loadMessages()
 
     // Listen for new messages
@@ -94,7 +94,6 @@ const useChatWindowHook = () => {
 
     const file = files[0]
 
-    // Kiểm tra kích thước file
     if (file.size > 10 * 1024 * 1024) {
       showError('File không được vượt quá 10MB')
       return
@@ -103,41 +102,46 @@ const useChatWindowHook = () => {
     try {
       setUploadingFile(true)
 
-      // 1. Upload file qua HTTP
-      const formData = new FormData()
-      formData.append('file', file)
+      // Tạo unique ID cho file upload này
+      const fileId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
 
-      const response = await clientService.uploadFile(formData)
-      console.log(response.data)
-      if (response.status !== HTTP_STATUS.OK) {
-        console.log(`response ${response.data}`)
-        throw new Error('Upload file thất bại')
+      // Gửi metadata trước
+      await socketService.sendFileMetadata({
+        fileId,
+        originalName: file.name,
+        size: file.size,
+        mimeType: file.type,
+        totalChunks,
+        receiverUsername
+      })
+
+      // Đọc và gửi từng chunk
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE
+        const end = Math.min(start + CHUNK_SIZE, file.size)
+        const chunk = file.slice(start, end)
+
+        // Đọc chunk thành base64
+        const base64Chunk = await readChunkAsBase64(chunk)
+
+        await socketService.sendFileChunk({
+          fileId,
+          chunkIndex,
+          totalChunks,
+          data: base64Chunk
+        })
       }
 
-      console.log(`response 1 ${response.data}`)
-
-      const result = response.data.data
-      console.log(result)
-      // 2. Gửi thông tin file qua WebSocket
-      await socketService.sendMessage(
-        receiverUsername,
-        file.name, // Tên file làm content
-        'file', // type = 'file'
-        {
-          fileName: result.filename,
-          originalName: result.originalName,
-          size: result.size,
-          mimeType: result.mimetype,
-          url: result.url
-        }
-      )
-
-      // Reset input file
+      // Gửi signal hoàn tất
+      await socketService.completeFileUpload({
+        fileId,
+        receiverUsername
+      })
       e.target.value = ''
-      showSuccess('Gửi file thành công')
     } catch (error) {
       showError('Không thể gửi file')
-      console.error('Error uploading file:', error)
+      console.error('Error sending file:', error)
     } finally {
       setUploadingFile(false)
     }
@@ -157,25 +161,24 @@ const useChatWindowHook = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      console.log('ok')
       e.preventDefault()
       handleSend()
     }
   }
 
   return {
-    messages,
-    inputValue,
-    loading,
-    receiverUsername,
-    receiverId,
     status,
+    loading,
+    messages,
+    receiverId,
+    inputValue,
+    uploadingFile,
     messagesEndRef,
-    handleInputChange,
+    receiverUsername,
     handleSend,
     handleKeyPress,
+    handleInputChange,
     handleFileSelect,
-    uploadingFile,
     setUploadingFile
   }
 }

@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Server, Socket } from 'socket.io'
 import Message from '~/models/Message'
 import User from '~/models/User'
 import Conversation from '~/models/Conversation'
+import fs from 'fs'
+import path from 'path'
 
 /**
  * Hàm xử lý toàn bộ các sự kiện liên quan đến tin nhắn (chat)
@@ -122,6 +125,208 @@ export const messageHandler = (io: Server, socket: Socket) => {
     } catch (error: any) {
       console.error('🚨 Lỗi khi gửi tin nhắn:', error)
       callback({ success: false, error: error.message })
+    }
+  })
+
+  const fileUploads = new Map<
+    string,
+    {
+      metadata: any
+      chunks: Map<number, string>
+      receivedChunks: number
+    }
+  >()
+
+  // 1. Nhận metadata
+  socket.on('file-metadata', async (metadata, callback) => {
+    try {
+      console.log('Lắng nghe event tại server')
+      const { fileId, originalName, size, mimeType, totalChunks, receiverUsername } = metadata
+
+      console.log('📁 Received file metadata:')
+      console.log('   - File ID:', fileId)
+      console.log('   - Name:', originalName)
+      console.log('   - Size:', size)
+      console.log('   - Total chunks:', totalChunks)
+
+      // Kiểm tra người nhận
+      const receiver = await User.findOne({ username: receiverUsername })
+      if (!receiver) {
+        return callback({
+          success: false,
+          error: 'Không tìm thấy người nhận'
+        })
+      }
+
+      // Lưu metadata vào map
+      fileUploads.set(fileId, {
+        metadata: {
+          originalName,
+          size,
+          mimeType,
+          totalChunks,
+          receiverUsername,
+          senderId: socket.data.userId
+        },
+        chunks: new Map(),
+        receivedChunks: 0
+      })
+
+      callback({ success: true })
+    } catch (error: any) {
+      console.error(error)
+      callback({ success: false, error: error.message })
+    }
+  })
+
+  // 2. Nhận từng chunk
+  socket.on('file-chunk', async (chunkData, callback) => {
+    try {
+      const { fileId, chunkIndex, data } = chunkData
+
+      const upload = fileUploads.get(fileId)
+      if (!upload) {
+        return callback({
+          success: false,
+          error: 'File upload không tồn tại'
+        })
+      }
+
+      // Lưu chunk
+      upload.chunks.set(chunkIndex, data)
+      upload.receivedChunks++
+
+      console.log(`📦 Received chunk ${chunkIndex + 1}/${upload.metadata.totalChunks} for file ${fileId}`)
+
+      callback({ success: true })
+    } catch (error: any) {
+      console.error(error)
+      callback({ success: false, error: error.message })
+    }
+  })
+
+  // 3. Hoàn tất upload - merge chunks
+  socket.on('file-upload-complete', async (data, callback) => {
+    try {
+      const { fileId, receiverUsername } = data
+      const userId = socket.data.userId
+
+      const upload = fileUploads.get(fileId)
+      if (!upload) {
+        return callback({
+          success: false,
+          error: 'File upload không tồn tại'
+        })
+      }
+
+      console.log('Gộp chunk lại để thành 1 file hoàn chỉnh', fileId)
+
+      // Kiểm tra đủ chunks chưa
+      if (upload.receivedChunks !== upload.metadata.totalChunks) {
+        return callback({
+          success: false,
+          error: `Thiếu chunks: nhận ${upload.receivedChunks}/${upload.metadata.totalChunks}`
+        })
+      }
+
+      // gộp chunks
+      const uploadDir = path.join(process.cwd(), 'uploads')
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true })
+      }
+
+      const fileName = `${Date.now()}_${upload.metadata.originalName}`
+      const filePath = path.join(uploadDir, fileName)
+
+      // Gộp các chunks theo thứ tự
+      const writeStream = fs.createWriteStream(filePath)
+
+      for (let i = 0; i < upload.metadata.totalChunks; i++) {
+        const chunkData = upload.chunks.get(i)
+        if (!chunkData) {
+          throw new Error(`Thiếu chunk ${i}`)
+        }
+
+        // Ghi chunk vào file
+        const buffer = Buffer.from(chunkData, 'base64')
+        writeStream.write(buffer)
+      }
+
+      writeStream.end()
+
+      await new Promise<void>((resolve, reject) => {
+        writeStream.on('finish', () => resolve())
+        writeStream.on('error', reject)
+      })
+
+      console.log('file sau khi đã merge các chunk', filePath)
+
+      // Xóa khỏi map
+      fileUploads.delete(fileId)
+
+      const receiver = await User.findOne({ username: receiverUsername })
+      if (!receiver) {
+        return callback({
+          success: false,
+          error: 'Không tìm thấy người nhận'
+        })
+      }
+
+      let conversation = await Conversation.findOne({
+        participants: { $all: [userId, receiver._id] }
+      })
+
+      if (!conversation) {
+        conversation = await Conversation.create({
+          participants: [userId, receiver._id]
+        })
+      }
+
+      const message = await Message.create({
+        conversationId: conversation._id,
+        senderId: userId,
+        type: 'file',
+        content: upload.metadata.originalName,
+        media: {
+          fileName: fileName,
+          originalName: upload.metadata.originalName,
+          size: upload.metadata.size,
+          mimeType: upload.metadata.mimeType,
+          url: `/uploads/${fileName}`
+        },
+        timestamp: new Date()
+      })
+      await Conversation.findByIdAndUpdate(conversation._id, {
+        lastMessageId: message._id
+      })
+
+      await message.populate('senderId', 'username status')
+      io.to(conversation._id.toString()).emit('receive-message', {
+        message,
+        conversationId: conversation._id
+      })
+
+      callback({
+        success: true,
+        message,
+        conversationId: conversation._id
+      })
+    } catch (error: any) {
+      console.error(error)
+      // Cleanup nếu có lỗi
+      fileUploads.delete(data.fileId)
+      callback({ success: false, error: error.message })
+    }
+  })
+
+  // Cleanup khi socket disconnect
+  socket.on('disconnect', () => {
+    // Xóa các file upload chưa hoàn thành của user này
+    for (const [fileId, upload] of fileUploads.entries()) {
+      if (upload.metadata.senderId === socket.data.userId) {
+        console.log(fileId)
+        fileUploads.delete(fileId)
+      }
     }
   })
 }
