@@ -2,7 +2,7 @@ import { Input, Button } from 'antd'
 import { SendOutlined, PaperClipOutlined } from '@ant-design/icons'
 import useChatInputHook from './useChatInputHook'
 
-const ChatInput: React.FC = () => {
+const ChatInput = () => {
   const { handleFileAttach, handleSend, message, setMessage } = useChatInputHook()
 
   return (

@@ -205,4 +205,26 @@ const getListUser = async (req: AuthRequest, res: Response) => {
   }
 }
 
-export { test, register, login, logout, getListUser }
+const handleUploadFile = async (req: AuthRequest, res: Response) => {
+  if (!req.file) {
+    console.log('không lấy được file trong request')
+    return res.status(400).json({ error: 'Không có file được upload' })
+  }
+
+  console.log('upload 3')
+
+  // Trả về thông tin file
+  return res.status(HTTPStatus.OK).json({
+    message: 'Gửi file thành công',
+    status: HTTPStatus.OK,
+    data: {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      url: `/uploads/${req.file.filename}` // URL để truy cập file
+    }
+  })
+}
+
+export { test, register, login, logout, getListUser, handleUploadFile }

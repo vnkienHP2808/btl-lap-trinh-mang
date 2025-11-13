@@ -43,7 +43,11 @@ function arrayLimit(val: Array<number>) {
   return val.length === 2
 }
 
-ConversationSchema.index({ participants: 1 }, { unique: true })
+ConversationSchema.index({ 'participants.0': 1, 'participants.1': 1 }, { unique: true })
 const Conversation = mongoose.model('Conversation', ConversationSchema)
 
+<<<<<<< HEAD
 export default Conversation
+=======
+export default Conversation
+>>>>>>> 808ac56d6ec852ad3aa0d6099f710bf20ea8dc1f
