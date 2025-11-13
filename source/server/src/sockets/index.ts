@@ -1,11 +1,14 @@
 import { Server } from 'socket.io'
 import User from '~/models/User'
-import { messageHandler } from './handlers/message.handler'
 import { socketAuth } from './middleware.ts/auth.middleware'
+import { messageHandler } from './handlers/message.handler'
 
+/**
+ * Entry point để thiết lập Socket.io server
+ * @param io
+ */
 export const setupSocket = (io: Server) => {
   io.use(socketAuth)
-
   io.on('connection', async (socket) => {
     const username = socket.data.username
     const userId = socket.data.userId
@@ -13,14 +16,12 @@ export const setupSocket = (io: Server) => {
     console.log(`User connected: ${username}`)
 
     await User.findById(userId).updateOne({ status: 'online', lastSeen: new Date() })
-
-    // Join conversation rooms
     socket.on('join-conversations', (conversationIds: string[]) => {
       conversationIds.forEach((id) => socket.join(id))
       console.log(`${username} joined ${conversationIds.length} rooms`)
     })
 
-    // Handlers
+    // Xử lý các sự kiện liên quan đến tin nhắn
     messageHandler(io, socket)
 
     socket.on('disconnect', async () => {

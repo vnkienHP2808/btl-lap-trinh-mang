@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express'
 import User from '~/models/User'
 import HTTPStatus from '~/shared/constants/httpStatus'
@@ -5,10 +6,6 @@ import logger from '~/shared/utils/log'
 import * as jwt from 'jsonwebtoken'
 import { addToBlacklist } from '~/services/jwt.service'
 import { AuthRequest } from '~/shared/types/util.type'
-
-const test = (req: Request, res: Response) => {
-  res.json({ message: 'OK' })
-}
 
 const register = async (req: Request, res: Response) => {
   logger.info('Đăng ký người dùng mới')
@@ -40,7 +37,6 @@ const register = async (req: Request, res: Response) => {
         username: savedUser.username
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error('Lỗi khi đăng ký người dùng:', e)
 
@@ -194,7 +190,6 @@ const getListUser = async (req: AuthRequest, res: Response) => {
         data: listUser
       })
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error('Lỗi không thể lấy danh sách người dùng: ', e)
     return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
@@ -205,26 +200,4 @@ const getListUser = async (req: AuthRequest, res: Response) => {
   }
 }
 
-const handleUploadFile = async (req: AuthRequest, res: Response) => {
-  if (!req.file) {
-    console.log('không lấy được file trong request')
-    return res.status(400).json({ error: 'Không có file được upload' })
-  }
-
-  console.log('upload 3')
-
-  // Trả về thông tin file
-  return res.status(HTTPStatus.OK).json({
-    message: 'Gửi file thành công',
-    status: HTTPStatus.OK,
-    data: {
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-      url: `/uploads/${req.file.filename}` // URL để truy cập file
-    }
-  })
-}
-
-export { test, register, login, logout, getListUser, handleUploadFile }
+export { register, login, logout, getListUser }

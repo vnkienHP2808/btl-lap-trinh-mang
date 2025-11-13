@@ -8,7 +8,7 @@ interface HeaderProps {
 const { Header: AntdHeader } = Layout
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
-  const { goToLogin, goToRegister, handleLogout, isLoggedIn, navigate, test } = useHeaderHook()
+  const { goToLogin, goToRegister, handleLogout, isLoggedIn, navigate } = useHeaderHook()
 
   return (
     <AntdHeader className='sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6'>
@@ -31,14 +31,6 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           </Button>
         ) : (
           <>
-            <Button
-              type='default'
-              icon={<UserAddOutlined />}
-              onClick={test}
-              className='border-blue-500 text-blue-500 transition duration-150 hover:border-blue-700 hover:text-blue-700'
-            >
-              Test
-            </Button>
             <Button
               type='default'
               icon={<UserAddOutlined />}

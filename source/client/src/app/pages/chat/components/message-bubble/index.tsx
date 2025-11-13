@@ -1,5 +1,5 @@
 import { Avatar } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
+import { UserOutlined, FileOutlined, DownloadOutlined } from '@ant-design/icons'
 import type { Message } from '@/shared/types/chat.type'
 
 type MessageBubbleProp = {
@@ -12,64 +12,88 @@ const handleOnClick = (url: string) => {
   window.open(urlPreview, '_blank')
 }
 
-const MessageBubble = ({ message }: MessageBubbleProp) => {
-  return (
-    <div className={`flex items-end space-x-2 ${message.isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
-      {/* Avatar chỉ hiện cho tin nhắn người khác */}
-      {!message.isMe && <Avatar icon={<UserOutlined />} size='small' style={{ backgroundColor: '#1890ff' }} />}
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+}
 
-      <div className='flex max-w-[70%] flex-col'>
-        {/* Username chỉ hiện cho tin nhắn người khác */}
-        {!message.isMe && <span className='mb-1 text-xs text-gray-500'>{message.senderId.username}</span>}
+const MessageBubble = ({ message }: MessageBubbleProp) => {
+  const isFile = message.type === 'file' && message.media?.url
+
+  return (
+    <div className={`flex items-end gap-2 ${message.isMe ? 'flex-row-reverse' : ''} mb-3`}>
+      {/* Avatar cho người khác */}
+      {!message.isMe && <Avatar icon={<UserOutlined />} size='small' style={{ backgroundColor: '#1677ff' }} />}
+
+      <div className='flex max-w-[75%] flex-col'>
+        {/* Username */}
+        {!message.isMe && <span className='mb-1 text-xs font-medium text-gray-500'>{message.senderId.username}</span>}
 
         <div
-          className={`rounded-lg px-4 py-2 ${
-            message.isMe ? 'bg-blue-500 text-white' : 'border border-gray-200 bg-white text-gray-800'
-          }`}
+          className={`relative rounded-2xl shadow-sm ${
+            message.isMe
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+              : 'border border-gray-200 bg-white text-gray-800'
+          } overflow-hidden break-words`}
+          style={{
+            wordBreak: 'break-word', // ép ngắt dòng khi chuỗi quá dài
+            overflowWrap: 'anywhere' // cho phép ngắt giữa các ký tự nếu không có khoảng trắng
+          }}
         >
-          {message.content && (
-            <p
-              className={`break-words whitespace-pre-wrap ${
-                message.media?.url
-                  ? 'flex cursor-pointer items-center space-x-2 rounded-lg p-2 transition hover:bg-gray-100'
-                  : ''
+          {isFile ? (
+            // Giao diện file
+            <div
+              className={`flex cursor-pointer items-center gap-3 p-3 transition-all duration-200 ${
+                message.isMe ? 'hover:bg-blue-700/80' : 'hover:bg-gray-50'
               }`}
-              onClick={() => {
-                if (message.media?.url) handleOnClick(message.media.url)
-              }}
+              onClick={() => handleOnClick(message.media!.url)}
             >
-              {message.media?.url ? (
-                <>
-                  {/* Icon file */}
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-5 w-5 flex-shrink-0 text-blue-500'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M7 21h10a2 2 0 002-2V9l-6-6H7a2 2 0 00-2 2v14a2 2 0 002 2z'
-                    />
-                  </svg>
-                  {/* Tên file */}
-                  <span className='text-blue-700 underline'>{message.media.url.split('/').pop()}</span>
-                </>
-              ) : (
-                message.content
-              )}
-            </p>
+              {/* Icon file */}
+              <div
+                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${
+                  message.isMe ? 'bg-blue-400' : 'bg-blue-100'
+                }`}
+              >
+                <FileOutlined className={`text-xl ${message.isMe ? 'text-white' : 'text-blue-500'}`} />
+              </div>
+
+              {/* Thông tin file */}
+              <div className='flex-1 overflow-hidden'>
+                <p className={`truncate text-sm font-medium ${message.isMe ? 'text-white' : 'text-gray-900'}`}>
+                  {message.media?.originalName || message.content}
+                </p>
+                {message.media?.size && (
+                  <p className={`text-xs ${message.isMe ? 'text-blue-100' : 'text-gray-500'}`}>
+                    {formatFileSize(message.media.size)}
+                  </p>
+                )}
+              </div>
+
+              {/* Icon tải xuống */}
+              <DownloadOutlined className={`text-lg ${message.isMe ? 'text-white' : 'text-blue-500'}`} />
+            </div>
+          ) : (
+            // Giao diện tin nhắn text
+            <div className='px-4 py-2 text-sm leading-relaxed'>
+              <p
+                className='break-words whitespace-pre-wrap'
+                style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+              >
+                {message.content}
+              </p>
+            </div>
           )}
 
-          <p className={`mt-1 text-xs ${message.isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-            {new Date(message.timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </p>
+          {/* Thời gian */}
+          <div className={`px-3 pb-1 ${isFile ? 'pt-0' : 'pt-1'} text-right`}>
+            <p className={`text-[11px] ${message.isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+              {new Date(message.timestamp).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+          </div>
         </div>
       </div>
     </div>

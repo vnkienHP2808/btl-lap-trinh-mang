@@ -61,47 +61,6 @@ class _Http {
       }
     )
   }
-  /**
-   * @param T: định nghĩa kiểu mà API sẽ trả về ( xem ví dụ)
-   * @param url: đường dãn API
-   * @param config
-   * @return
-   * Ví dụ sử dụng
-   * const response = await http.get<ApiResponse<User[]>>('/users')
-   * =============================================================
-   * @description: API Login:
-   * interface LoginRequest {
-   *     username: string
-   *     password: string
-   * }
-   * interface LoginResponse {
-   *    message: string
-   *    user: User
-   *    accessToken: string
-   *    refreshToken: string
-   * }
-   * credentials: LoginRequest
-   * const response = await http.post<ApiResponse<LoginResponse>>('/auth/login',credentials)
-   * ==============================================================
-   * @description: API tạo mới
-   * interface CreateUserRequest {
-   *  username: string
-   *  email: string
-   *  password: string
-   *  fullName: string
-   * }
-   * userData: CreateUserRequest
-   * const response = await http.post<ApiResponse<User>>(/users', userData)
-   * ==============================================================
-   * @description: Trường hợp sử dụng biến Config truyền vào
-   * const config: AxiosRequestConfig = {
-   *    headers: {
-   *        'Authorization': `Bearer ${token}`,
-   *        'X-Custom-Header': 'some-value'
-   *    }
-   *  }
-   * const response = await http.get<ApiResponse<User>>('/user/profile', config)
-   */
 
   get<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.instance.get(url, config)

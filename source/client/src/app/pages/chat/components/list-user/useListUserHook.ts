@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import conversationService from '@/services/conversation.service'
 import socketService from '@/services/socket.service'
 import useNotificationHook from '@/shared/hook/useNotificationHook'
@@ -20,12 +21,10 @@ const useListUserHook = () => {
   const { showError, showSuccess } = useNotificationHook()
   const navigate = useNavigate()
 
-  // Lấy danh sách users
   const getListUser = async () => {
     try {
       const response = await conversationService.getListUser()
       if (response.status === 200) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const users = response.data.data.map((u: any) => ({
           id: u._id,
           username: u.username,
@@ -35,9 +34,8 @@ const useListUserHook = () => {
         }))
         setListUser(users)
       }
-    } catch (error) {
+    } catch {
       showError('Không thể tải danh sách người dùng')
-      console.error('Error loading users:', error)
     }
   }
 
@@ -58,6 +56,7 @@ const useListUserHook = () => {
     })
 
     socketService.onUserOnline(({ userId }) => {
+      getListUser()
       setOnlineUsers((prev) => [...new Set([...prev, userId])])
     })
 
