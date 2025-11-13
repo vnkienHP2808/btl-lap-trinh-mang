@@ -33,7 +33,7 @@ client  <-->  server  <-->  database
 
 **Sơ đồ hệ thống:**
 
-![System Diagram](./static/diagram.png)
+![System Diagram](./statics/diagram.png)
 
 ---
 
@@ -119,11 +119,11 @@ http://localhost:3000
 
 ## 📊 KẾT QUẢ THỰC NGHIỆM
 
-![Demo Result](./static/demo-1.png)
+![Demo Result](./statics/demo-1.png)
 
-![Demo Result](./static/demo-2.png)
+![Demo Result](./statics/demo-2.png)
 
-![Demo Result](./static/demo-3.png)
+![Demo Result](./statics/demo-3.png)
 
 ---
 
