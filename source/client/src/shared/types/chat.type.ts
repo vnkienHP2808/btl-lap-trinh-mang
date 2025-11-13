@@ -2,15 +2,22 @@ import type { Status } from './auth.type'
 
 export interface Message {
   id: string
+  conversationId: string
   senderId: {
     username: string
     status: Status
     id: string
   }
   content: string
-  type: 'text' | 'file'
+  type: 'text' | 'file' | 'video'
   isMe: boolean
-  senderName: string
+  media: {
+    url: string
+    mimeType: string
+    fileName: string
+    originalName: string
+    size: number
+  }
   timestamp: Date
 }
 

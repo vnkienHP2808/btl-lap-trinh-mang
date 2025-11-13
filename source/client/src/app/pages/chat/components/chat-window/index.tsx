@@ -1,6 +1,6 @@
 import { Input, Button } from 'antd'
 import { PaperClipOutlined, SendOutlined } from '@ant-design/icons'
-import MessageBubble, { type MessageBubbleProps } from '../message-bubble'
+import MessageBubble from '../message-bubble'
 import useChatWindowHook from './useChatWindowHook'
 
 const { TextArea } = Input
@@ -15,7 +15,6 @@ const ChatWindow = () => {
     handleInputChange,
     handleSend,
     handleKeyPress,
-    setUploadingFile,
     uploadingFile
   } = useChatWindowHook()
 
@@ -33,20 +32,9 @@ const ChatWindow = () => {
       <div className='flex-1 overflow-y-auto bg-gray-50 p-4'>
         <div className='flex flex-col space-y-4'>
           {messages.map((msg, index) => {
-            const convertedMsg: MessageBubbleProps = {
-              message: {
-                _id: msg.id,
-                content: msg.content,
-                timestamp: msg.timestamp,
-                isMe: msg.isMe,
-                senderId: {
-                  username: msg.senderId.username
-                }
-              }
-            }
             return (
               <div key={index} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                <MessageBubble message={convertedMsg.message} />
+                <MessageBubble message={msg} />
               </div>
             )
           })}

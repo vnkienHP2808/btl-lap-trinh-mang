@@ -14,7 +14,11 @@ const MediaSchema = new Schema(
       type: String,
       required: true
     },
-    duration: {
+    originalName: {
+      type: String,
+      required: true
+    },
+    size: {
       type: Number,
       required: false
     }
@@ -48,7 +52,7 @@ const MessageSchema = new Schema(
       type: String,
       trim: true
     },
-    media: [MediaSchema]
+    media: MediaSchema
   },
   {
     timestamps: true
@@ -56,8 +60,4 @@ const MessageSchema = new Schema(
 )
 
 const Message = mongoose.model('Message', MessageSchema)
-<<<<<<< HEAD
 export default Message
-=======
-export default Message
->>>>>>> 808ac56d6ec852ad3aa0d6099f710bf20ea8dc1f

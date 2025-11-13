@@ -39,6 +39,7 @@ class SocketService {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMessage(receiverUsername: string, content: string, type = 'text', media: any = null) {
+    console.log('send message')
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.socket?.emit('send-message', { receiverUsername, content, type, media }, (response: any) => {
