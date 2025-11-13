@@ -50,16 +50,16 @@ client  <-->  server  <-->  database
 
 ## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN
 
-**Cách 1: Chạy thủ công**
+### Cách 1: Chạy thủ công
 
-### 1. Clone repository
+**1. Clone repository**
 
 ```bash
 git clone https://github.com/jnp2018/mid-project-482422434.git assignment-network-project
 cd assignment-network-project
 ```
 
-### 2. Chạy server
+**2. Chạy server**
 
 ```bash
 cd source/server
@@ -67,7 +67,7 @@ npm install # cài đặt các thư viện cần thiết
 npm run dev # chạy ứng dụng với môi trường development
 ```
 
-### 3. Chạy client
+**3. Chạy client**
 
 ```bash
 cd source/client
@@ -75,7 +75,7 @@ npm install # cài đặt các thư viện cần thiết
 npm run dev # chạy ứng dụng với môi trường development
 ```
 
-### 4. Kiểm thử nhanh
+**4. Kiểm thử nhanh**
 
 Truy cập tại địa chỉ:
 
@@ -83,28 +83,28 @@ Truy cập tại địa chỉ:
 http://localhost:3000
 ```
 
-**Cách 2: Chạy với Docker (Khuyến khích)**
+### Cách 2: Chạy với Docker (Khuyến khích)
 
-### 1. Clone repository
+**1. Clone repository**
 
 ```bash
 git clone https://github.com/jnp2018/mid-project-482422434.git assignment-network-project
 cd assignment-network-project
 ```
 
-### 2. Vào thư mục chứa file build
+**2. Vào thư mục chứa file build**
 
 ```bash
 cd source
 ```
 
-### 3. Chạy dự án
+**3. Chạy dự án**
 
 ```bash
 docker-compose up -d
 ```
 
-### 4. Kiểm thử nhanh
+**4. Kiểm thử nhanh**
 
 Truy cập tại địa chỉ:
 
