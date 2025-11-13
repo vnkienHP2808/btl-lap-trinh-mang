@@ -39,15 +39,18 @@ client  <-->  server  <-->  database
 
 ## ⚙️ CÔNG NGHỆ SỬ DỤNG
 
-| Thành phần | Công nghệ                                         | Ghi chú                               |
-| ---------- | ------------------------------------------------- | ------------------------------------- |
-| Server     | NodeJS 20 + ExpressJS + socket.io                 | Xử lý logic, quản lý kết nối realtime |
-| Client     | NodeJS 20 + ReactJS 18 + socket.io-client + Axios | Giao tiếp WebSocket + HTTP            |
-| Database   | MongooDB                                          | Lưu trữ dữ liệu tạm thời              |
+| Thành phần | Công nghệ                                         | Ghi chú                                                          |
+| ---------- | ------------------------------------------------- | ---------------------------------------------------------------- |
+| Server     | NodeJS 20 + ExpressJS + socket.io                 | Xử lý logic, quản lý kết nối realtime                            |
+| Client     | NodeJS 20 + ReactJS 18 + socket.io-client + Axios | Giao tiếp WebSocket + HTTP                                       |
+| Database   | MongooDB                                          | Lưu trữ dữ liệu tạm thời                                         |
+| Triển khai | Docker Engine 27.3.1 + Docker Compose 2.29.7      | Đóng gói ứng dụng, sẵn sàng triển khai lên môi trường production |
 
 ---
 
 ## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN
+
+**Cách 1: Chạy thủ công**
 
 ### 1. Clone repository
 
@@ -70,6 +73,35 @@ npm run dev # chạy ứng dụng với môi trường development
 cd source/client
 npm install # cài đặt các thư viện cần thiết
 npm run dev # chạy ứng dụng với môi trường development
+```
+
+### 4. Kiểm thử nhanh
+
+Truy cập tại địa chỉ:
+
+```bash
+http://localhost:3000
+```
+
+**Cách 2: Chạy với Docker (Khuyến khích)**
+
+### 1. Clone repository
+
+```bash
+git clone https://github.com/jnp2018/mid-project-482422434.git assignment-network-project
+cd assignment-network-project
+```
+
+### 2. Vào thư mục chứa file build
+
+```bash
+cd source
+```
+
+### 3. Chạy dự án
+
+```bash
+docker-compose up -d
 ```
 
 ### 4. Kiểm thử nhanh

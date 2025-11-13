@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  backend:
+    image: trinhquanglam/app-chat-backend:latest
+    container_name: app-chat-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_URL=mongodb+srv://trinhquanglam2k4:lam10a6123@cluster0.4qtgf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - JWT_SECRET=12345
+      - ALLOW_ORIGIN=http://localhost:3000
+      - PORT=8080
+    networks:
+      - monitoring
+    volumes:
+      - ./uploads:/app/uploads
+
+  frontend:
+    image: trinhquanglam/app-chat-frontend:latest
+    container_name: app-chat-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - VITE_BACKEND_URL=http://localhost:8080
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
