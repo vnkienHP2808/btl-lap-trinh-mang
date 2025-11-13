@@ -1,22 +1,49 @@
 import { Server, Socket } from 'socket.io'
+import Message from '~/models/Message'
 import User from '~/models/User'
 import Conversation from '~/models/Conversation'
-import Message from '~/models/Message'
 
 /**
  * Hàm xử lý toàn bộ các sự kiện liên quan đến tin nhắn (chat)
+ * @param io: Server - Đối tượng Socket.io server
+ * @param socket: Socket - Đối tượng Socket đại diện cho kết nối của một client
+ *
  */
 export const messageHandler = (io: Server, socket: Socket) => {
   /**
    * Sự kiện gửi tin nhắn
    * - Client phát sự kiện 'send-message' khi người dùng gửi tin nhắn cho người khác
-   * - Dữ liệu gồm: receiverUsername, content, type, media
-   * - Sau khi xử lý, server phản hồi lại qua callback (thành công hoặc lỗi)
+   * - Dữ liệu gồm: {receiverUsername, content, type, media}
+   * - Sau khi xử lý, server phản hồi lại qua callback (thành công hoặc lỗi). Callback ở đây hiểu đơn giản là 1 cái hàm được truyền từ ngoài (Client) vào. Cái này sẽ sử lý theo từng trường hợp cụ thể
+   * =============================================
+   * Ví dụ Callback:
+   *  ======= (Client)
+   * socket.emit('send-message', data, (response) => {
+   *  if (response.success) {
+   *   // Gửi thành công
+   *  } else {
+   *  // Gửi thất bại
+   * }
+   * })
+   * Thì cái hàm ở trong on('send-message', ...) này chính là phần callback
+   * 
+   * Trên Server lắng nghe sự kiện send-message, lúc nó xử lý xong gọi hàm này => Client sẽ chạy cái hàm đấy
+   * ======= (Server)
+   * socket.on('send-message', async (data, callback) => {
+   * // data: dữ liệu client gửi lên
+   * // callback: một hàm client gửi kèm để nhận phản hồi
+   * // xử lý xong...
+   * callback({
+    success: true,
+    message: 'Tin nhắn đã được lưu!'
+    })
+   })
    */
   socket.on('send-message', async (data, callback) => {
     try {
       // Lấy thông tin người gửi từ socket
-      const { receiverUsername, content, type = 'text', media = [] } = data
+      const { receiverUsername, content, type = 'text', media = null } = data
+      console.log(data)
       const userId = socket.data.userId
       const username = socket.data.username
 
@@ -45,17 +72,22 @@ export const messageHandler = (io: Server, socket: Socket) => {
         })
       }
 
-      /**
-       * 3. Tạo message mới trong conversation
-       */
-      const message = await Message.create({
+      const messageData: any = {
         conversationId: conversation._id,
         senderId: userId,
         type,
         content,
-        media,
         timestamp: new Date()
-      })
+      }
+
+      if (media && Object.keys(media).length > 0) {
+        messageData.media = media
+      }
+
+      /**
+       * 3. Tạo message mới trong conversation
+       */
+      const message = await Message.create(messageData)
 
       /**
        * 4. Cập nhật message cuối cùng (lastMessageId) trong conversation
@@ -77,6 +109,7 @@ export const messageHandler = (io: Server, socket: Socket) => {
         message,
         conversationId: conversation._id
       })
+      console.log('phát đi sự kiện nhận tin nhắn')
 
       /**
        * 7. Gọi callback trả về kết quả cho client đã gửi

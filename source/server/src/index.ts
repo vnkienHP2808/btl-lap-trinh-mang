@@ -11,6 +11,7 @@ import { setupSocket } from './sockets'
 import { setupApp } from './config/app.config'
 import { fixIndex } from './scripts/fixIndex'
 import mongoose from 'mongoose'
+import path from 'path'
 
 const PORT = process.env.PORT || 5000
 const app = express()
@@ -22,6 +23,7 @@ setupApp(app)
 app.use('/api/user', userRouter)
 app.use('/api/message', messageRouter)
 app.use('/api/conversations', conversationRouter)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 const server = http.createServer(app)
 const io = createSocketServer(server)

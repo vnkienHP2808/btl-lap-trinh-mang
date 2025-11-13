@@ -1,13 +1,22 @@
 import { Input, Button } from 'antd'
-import { SendOutlined } from '@ant-design/icons'
+import { PaperClipOutlined, SendOutlined } from '@ant-design/icons'
 import MessageBubble from '../message-bubble'
 import useChatWindowHook from './useChatWindowHook'
 
 const { TextArea } = Input
 
 const ChatWindow = () => {
-  const { messages, inputValue, loading, messagesEndRef, handleInputChange, handleSend, handleKeyPress } =
-    useChatWindowHook()
+  const {
+    handleFileSelect,
+    messages,
+    inputValue,
+    loading,
+    messagesEndRef,
+    handleInputChange,
+    handleSend,
+    handleKeyPress,
+    uploadingFile
+  } = useChatWindowHook()
 
   if (loading) {
     return (
@@ -22,11 +31,13 @@ const ChatWindow = () => {
       {/* Messages area */}
       <div className='flex-1 overflow-y-auto bg-gray-50 p-4'>
         <div className='flex flex-col space-y-4'>
-          {messages.map((msg, index) => (
-            <div key={index} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-              <MessageBubble message={msg} />
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            return (
+              <div key={index} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+                <MessageBubble message={msg} />
+              </div>
+            )
+          })}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -34,9 +45,20 @@ const ChatWindow = () => {
       {/* Input area */}
       <div className='border-t bg-white p-4'>
         <div className='flex space-x-2'>
+          <Button
+            type='text'
+            icon={<PaperClipOutlined />}
+            onClick={() => document.getElementById('file-input')?.click()}
+            size='large'
+            title='Đính kèm file'
+            loading={uploadingFile}
+            disabled={uploadingFile}
+          />
+          <input id='file-input' type='file' style={{ display: 'none' }} onChange={handleFileSelect} multiple />
           <TextArea
             value={inputValue}
             onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
             placeholder='Nhập tin nhắn...'
             autoSize={{ minRows: 1, maxRows: 4 }}
           />

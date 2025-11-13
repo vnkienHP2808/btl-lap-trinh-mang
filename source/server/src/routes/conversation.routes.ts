@@ -4,8 +4,8 @@ import {
   getAllConversationMessages,
   getAllUserExceptCurrent
 } from '~/controllers/conversation.controller'
-import { authenticateToken } from '~/middlewares/user.middlewares'
 
+import { authenticateToken } from '~/middlewares/user.middleware'
 /**
  * Định nghĩa các route liên quan đến conversation
  */

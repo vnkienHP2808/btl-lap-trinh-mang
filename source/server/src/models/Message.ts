@@ -14,7 +14,11 @@ const MediaSchema = new Schema(
       type: String,
       required: true
     },
-    duration: {
+    originalName: {
+      type: String,
+      required: true
+    },
+    size: {
       type: Number,
       required: false
     }
@@ -48,7 +52,7 @@ const MessageSchema = new Schema(
       type: String,
       trim: true
     },
-    media: [MediaSchema]
+    media: MediaSchema
   },
   {
     timestamps: true

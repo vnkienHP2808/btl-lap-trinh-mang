@@ -8,7 +8,7 @@ import type {
   RequestResponse
 } from '@/shared/types/auth.type'
 import storageService from '@/shared/services/storage.service'
-import type { Message } from '@/shared/types/chat.type'
+import type { FileResponse, Message } from '@/shared/types/chat.type'
 
 class _ClientService {
   async login(payload: LoginRequest) {
@@ -31,8 +31,22 @@ class _ClientService {
     return response
   }
 
+  async logout() {
+    const response = await http.post<ApiResponse<null>>('api/user/logout')
+    return response
+  }
+
   async getCurrentUserName() {
     return storageService.getUsernameFromLS()
+  }
+
+  async uploadFile(formData: FormData) {
+    const response = await http.post<ApiResponse<FileResponse>>('api/user/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response
   }
 }
 

@@ -1,6 +1,7 @@
 import express from 'express'
-import { getListUser, login, logout, register, test } from '~/controllers/user.controller'
-import { authenticateToken } from '~/middlewares/user.middlewares'
+import { getListUser, handleUploadFile, login, logout, register, test } from '~/controllers/user.controller'
+import { authenticateToken } from '~/middlewares/user.middleware'
+import { upload } from '~/shared/utils/uploadFile'
 /**
  * Định nghĩa các route liên quan đến user
  */
@@ -15,3 +16,4 @@ userRouter.use(authenticateToken) // áp dụng middleware xác thực token cho
 
 userRouter.get('/test', test)
 userRouter.get('/list', getListUser)
+userRouter.post('/upload', upload.single('file'), handleUploadFile)
