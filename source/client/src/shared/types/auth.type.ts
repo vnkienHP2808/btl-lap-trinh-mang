@@ -1,4 +1,4 @@
-enum Status {
+export enum Status {
   ONLINE = 'online',
   OFFLINE = 'offline'
 }
@@ -29,4 +29,11 @@ interface RequestResponse {
   username: string
 }
 
-export type { LoginRequest, LoginResponse, RegisterRequest, RequestResponse }
+interface GetListUserResponse {
+  id: string
+  username: string
+  status: Status
+  createdAt: Date
+}
+
+export type { LoginRequest, LoginResponse, RegisterRequest, RequestResponse, GetListUserResponse }

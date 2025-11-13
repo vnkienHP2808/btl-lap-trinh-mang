@@ -9,6 +9,10 @@ class _StorageService {
     localStorage.clear()
   }
   public getAccessTokenFromLS = () => localStorage.getItem('accessToken') || ''
+
+  public getUsernameFromLS = () => localStorage.getItem('userName') || ''
+
+  public getUserIdFromLS = () => localStorage.getItem('userId') || ''
 }
 
 const storageService = new _StorageService()
