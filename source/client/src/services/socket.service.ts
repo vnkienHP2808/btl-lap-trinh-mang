@@ -15,15 +15,11 @@ class SocketService {
     })
 
     this.socket.on('connect', () => {
-      console.log('Socket connected')
+      console.log('Connected to Socket.io server')
     })
 
     this.socket.on('disconnect', () => {
-      console.log('Socket disconnected')
-    })
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error)
+      console.log('Disconnected from Socket.io server')
     })
 
     return this.socket
@@ -113,6 +109,51 @@ class SocketService {
 
   off(event: string) {
     this.socket?.off(event)
+  }
+
+  // ====== Video upload (chunked) ======
+  sendVideoMetadata(metadata: {
+    fileId: string
+    originalName: string
+    size: number
+    mimeType: string
+    totalChunks: number
+    receiverUsername: string
+  }) {
+    console.log('Tiến hành emit [video-metadata]')
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-metadata', metadata, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-metadata failed'))
+        }
+      })
+    })
+  }
+
+  sendVideoChunk(chunkData: { fileId: string; chunkIndex: number; totalChunks: number; data: ArrayBuffer | string }) {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-chunk', chunkData, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-chunk failed'))
+        }
+      })
+    })
+  }
+
+  completeVideoUpload(fileId: string) {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-upload-complete', { fileId }, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-upload-complete failed'))
+        }
+      })
+    })
   }
 }
 
