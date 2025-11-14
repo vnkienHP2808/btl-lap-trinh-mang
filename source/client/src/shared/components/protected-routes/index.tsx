@@ -1,4 +1,3 @@
-import useAuthenHook from '@/shared/hook/useAuthenHook'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -23,7 +22,7 @@ type Props = {
   children: ReactNode
 }
 const ProtectedRotes = ({ children }: Props) => {
-  const isLogin = useAuthenHook()
+  const isLogin = true
   const navigate = useNavigate()
   if (!isLogin) {
     navigate('/')

@@ -2,7 +2,7 @@ import http from '@/shared/services/http.service'
 import type { ApiResponse } from '@/shared/types/http.type'
 import type { LoginRequest, LoginResponse, RegisterRequest, RequestResponse } from '@/shared/types/auth.type'
 import storageService from '@/shared/services/storage.service'
-import type { FileResponse, Message } from '@/shared/types/chat.type'
+import type { Message } from '@/shared/types/chat.type'
 
 class _ClientService {
   async login(payload: LoginRequest) {

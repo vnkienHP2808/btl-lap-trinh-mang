@@ -1,8 +1,8 @@
 import { Server } from 'socket.io'
 import User from '~/models/User'
-import { socketAuth } from './middleware/auth.middleware'
 import { messageHandler } from './handlers/message.handler'
 import { uploadVideoHandler } from './handlers/video.handler'
+import { socketAuth } from './middleware.ts/auth.middleware'
 
 /**
  * Entry point để thiết lập Socket.io server
