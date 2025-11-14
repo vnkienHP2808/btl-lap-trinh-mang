@@ -8,29 +8,19 @@ export const connectDB = async () => {
     await mongoose.connect(process.env.DB_URL as string, {
       dbName: 'chat-app'
     })
-    console.log(process.env.DB_URL as string)
     console.log('Kết nối thành công')
   } catch (error) {
-    console.log(process.env.DB_URL as string)
     console.error(error)
-    process.exit(1)
   }
 }
 
 export const clearDataUsers = async () => {
-  try {
-    const result = await User.deleteMany({})
-  } catch (error) {
-    console.error(error)
-  }
+  const result = await User.deleteMany({})
+  return result.deletedCount
 }
 
 export const clearConversationAndMessage = async () => {
-  try {
-    await Message.deleteMany({})
-    const result = await Conversation.deleteMany({})
-    return result.deletedCount
-  } catch (error) {
-    console.error(error)
-  }
+  await Message.deleteMany({})
+  const result = await Conversation.deleteMany({})
+  return result.deletedCount
 }

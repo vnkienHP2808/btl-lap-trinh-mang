@@ -9,7 +9,6 @@ import { createSocketServer } from './config/socket.config'
 import { setupSocket } from './sockets'
 import { setupApp } from './config/app.config'
 import path from 'path'
-import mongoose from 'mongoose'
 
 const PORT = process.env.PORT || 5000
 const app = express()
@@ -26,7 +25,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 const server = http.createServer(app)
 const io = createSocketServer(server)
 
-//set up server socket
+//setup server socket
 setupSocket(io)
 
 const startServer = async () => {

@@ -1,0 +1,5 @@
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const CHUNK_SIZE = 64 * 1024 // 64KB mỗi chunk
+
+export { MAX_VIDEO_SIZE, MAX_FILE_SIZE, CHUNK_SIZE }

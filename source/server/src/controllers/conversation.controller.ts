@@ -55,11 +55,10 @@ const findOrCreateConversation = async (req: AuthRequest, res: Response) => {
       message: 'Tạo cuộc trò chuyện thành công',
       data: conversation
     })
-  } catch (error: any) {
-    console.error(error)
+  } catch {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: 'Lỗi server',
       data: null
     })
   }
@@ -80,9 +79,8 @@ const getAllUserExceptCurrent = async (req: AuthRequest, res: Response) => {
     }).select('username status lastSeen')
 
     res.json({ success: true, data: users, message: 'Lấy danh sách người dùng thành công' })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message })
+  } catch {
+    res.status(500).json({ success: false, error: 'Lỗi server' })
   }
 }
 
