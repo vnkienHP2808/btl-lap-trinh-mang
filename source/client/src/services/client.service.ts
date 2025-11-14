@@ -1,12 +1,6 @@
 import http from '@/shared/services/http.service'
 import type { ApiResponse } from '@/shared/types/http.type'
-import type {
-  GetListUserResponse,
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  RequestResponse
-} from '@/shared/types/auth.type'
+import type { LoginRequest, LoginResponse, RegisterRequest, RequestResponse } from '@/shared/types/auth.type'
 import storageService from '@/shared/services/storage.service'
 import type { FileResponse, Message } from '@/shared/types/chat.type'
 
@@ -26,11 +20,6 @@ class _ClientService {
     return response
   }
 
-  async test() {
-    const response = await http.get<ApiResponse<null>>('api/user/test')
-    return response
-  }
-
   async logout() {
     const response = await http.post<ApiResponse<null>>('api/user/logout')
     return response
@@ -38,15 +27,6 @@ class _ClientService {
 
   async getCurrentUserName() {
     return storageService.getUsernameFromLS()
-  }
-
-  async uploadFile(formData: FormData) {
-    const response = await http.post<ApiResponse<FileResponse>>('api/user/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-    return response
   }
 }
 

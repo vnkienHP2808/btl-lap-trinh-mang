@@ -1,7 +1,8 @@
 import { Server } from 'socket.io'
 import User from '~/models/User'
-import { socketAuth } from './middleware.ts/auth.middleware'
+import { socketAuth } from './middleware/auth.middleware'
 import { messageHandler } from './handlers/message.handler'
+import { uploadVideoHandler } from './handlers/video.handler'
 
 /**
  * Entry point để thiết lập Socket.io server
@@ -12,10 +13,9 @@ export const setupSocket = (io: Server) => {
   io.on('connection', async (socket) => {
     const username = socket.data.username
     const userId = socket.data.userId
-
     console.log(`User connected: ${username}`)
-
     await User.findById(userId).updateOne({ status: 'online', lastSeen: new Date() })
+
     socket.on('join-conversations', (conversationIds: string[]) => {
       conversationIds.forEach((id) => socket.join(id))
       console.log(`${username} joined ${conversationIds.length} rooms`)
@@ -24,8 +24,11 @@ export const setupSocket = (io: Server) => {
     // Xử lý các sự kiện liên quan đến tin nhắn
     messageHandler(io, socket)
 
+    // Upload video
+    uploadVideoHandler(io, socket)
+
     socket.on('disconnect', async () => {
-      console.log(`User disconnected: ${username}`)
+      console.log(`User mất kết nối: ${username}`)
       await User.findById(userId).updateOne({ status: 'offline', lastSeen: new Date() })
     })
   })

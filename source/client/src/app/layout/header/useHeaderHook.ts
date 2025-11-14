@@ -15,7 +15,6 @@ const useHeaderHook = () => {
     navigate('/login')
     showSuccess('Đăng xuất thành công')
   }
-
   return { isLoggedIn, goToRegister, goToLogin, handleLogout, navigate }
 }
 export default useHeaderHook

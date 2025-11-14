@@ -1,99 +1,72 @@
 import { Avatar } from 'antd'
-import { UserOutlined, FileOutlined, DownloadOutlined } from '@ant-design/icons'
+import { UserOutlined } from '@ant-design/icons'
 import type { Message } from '@/shared/types/chat.type'
 
 type MessageBubbleProp = {
   message: Message
 }
 
-const handleOnClick = (url: string) => {
-  const urlPreview = `http://localhost:8080${url}`
-  console.log(urlPreview)
-  window.open(urlPreview, '_blank')
-}
-
-const formatFileSize = (bytes: number) => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+const buildAbsoluteUrl = (url?: string) => {
+  if (!url) return ''
+  // Backend phục vụ static ở http://localhost:8080, media.url dạng "/uploads/xxx.mp4"
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
 }
 
 const MessageBubble = ({ message }: MessageBubbleProp) => {
-  const isFile = message.type === 'file' && message.media?.url
+  const isVideo = Boolean(message.media?.mimeType?.startsWith('video/'))
+  const fileUrl = buildAbsoluteUrl(message.media?.url)
 
   return (
-    <div className={`flex items-end gap-2 ${message.isMe ? 'flex-row-reverse' : ''} mb-3`}>
-      {/* Avatar cho người khác */}
-      {!message.isMe && <Avatar icon={<UserOutlined />} size='small' style={{ backgroundColor: '#1677ff' }} />}
+    <div
+      className={`flex items-end gap-2 ${message.isMe ? 'flex-row-reverse justify-start' : 'flex-row justify-start'}`}
+    >
+      {!message.isMe && <Avatar icon={<UserOutlined />} size='small' style={{ backgroundColor: '#1890ff' }} />}
 
-      <div className='flex max-w-[75%] flex-col'>
-        {/* Username */}
-        {!message.isMe && <span className='mb-1 text-xs font-medium text-gray-500'>{message.senderId.username}</span>}
+      <div className={`flex max-w-[70%] flex-col ${message.isMe ? 'items-end' : 'items-start'}`}>
+        {!message.isMe && <span className='mb-1 text-xs text-gray-500'>{message.senderId.username}</span>}
 
         <div
-          className={`relative rounded-2xl shadow-sm ${
-            message.isMe
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-              : 'border border-gray-200 bg-white text-gray-800'
-          } overflow-hidden break-words`}
-          style={{
-            wordBreak: 'break-word', // ép ngắt dòng khi chuỗi quá dài
-            overflowWrap: 'anywhere' // cho phép ngắt giữa các ký tự nếu không có khoảng trắng
-          }}
+          className={`rounded-lg px-4 py-2 ${message.isMe ? 'bg-blue-500 text-white' : 'border border-gray-200 bg-white text-gray-800'}`}
         >
-          {isFile ? (
-            // Giao diện file
-            <div
-              className={`flex cursor-pointer items-center gap-3 p-3 transition-all duration-200 ${
-                message.isMe ? 'hover:bg-blue-700/80' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => handleOnClick(message.media!.url)}
+          {/* Nội dung */}
+          {isVideo ? (
+            <div className='space-y-2'>
+              <video
+                src={fileUrl}
+                controls
+                playsInline
+                crossOrigin='anonymous' // để CORS rõ ràng cho video
+                preload='metadata'
+                className='max-h-64 w-full rounded-md'
+              />
+              <div className='flex items-center justify-between text-xs'>
+                <span className='truncate'>{message.media?.originalName || message.content}</span>
+                <a href={fileUrl} download className='text-white underline hover:text-blue-100'>
+                  Tải xuống
+                </a>
+              </div>
+            </div>
+          ) : message.media?.url ? (
+            // fallback: file khác loại -> vẫn để link như cũ
+            <a
+              href={fileUrl}
+              target='_blank'
+              rel='noreferrer'
+              className={`${message.isMe ? '!text-white' : '!text-black'} underline hover:text-blue-100`}
             >
-              {/* Icon file */}
-              <div
-                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${
-                  message.isMe ? 'bg-blue-400' : 'bg-blue-100'
-                }`}
-              >
-                <FileOutlined className={`text-xl ${message.isMe ? 'text-white' : 'text-blue-500'}`} />
-              </div>
-
-              {/* Thông tin file */}
-              <div className='flex-1 overflow-hidden'>
-                <p className={`truncate text-sm font-medium ${message.isMe ? 'text-white' : 'text-gray-900'}`}>
-                  {message.media?.originalName || message.content}
-                </p>
-                {message.media?.size && (
-                  <p className={`text-xs ${message.isMe ? 'text-blue-100' : 'text-gray-500'}`}>
-                    {formatFileSize(message.media.size)}
-                  </p>
-                )}
-              </div>
-
-              {/* Icon tải xuống */}
-              <DownloadOutlined className={`text-lg ${message.isMe ? 'text-white' : 'text-blue-500'}`} />
-            </div>
+              File tài liệu: {message.media.url.split('/').pop()}
+            </a>
           ) : (
-            // Giao diện tin nhắn text
-            <div className='px-4 py-2 text-sm leading-relaxed'>
-              <p
-                className='break-words whitespace-pre-wrap'
-                style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-              >
-                {message.content}
-              </p>
-            </div>
+            <p className='break-words whitespace-pre-wrap'>{message.content}</p>
           )}
 
-          {/* Thời gian */}
-          <div className={`px-3 pb-1 ${isFile ? 'pt-0' : 'pt-1'} text-right`}>
-            <p className={`text-[11px] ${message.isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-              {new Date(message.timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
-          </div>
+          <p className={`mt-1 text-xs ${message.isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+            {new Date(message.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
         </div>
       </div>
     </div>

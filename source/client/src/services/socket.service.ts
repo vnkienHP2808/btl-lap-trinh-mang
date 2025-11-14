@@ -15,15 +15,11 @@ class SocketService {
     })
 
     this.socket.on('connect', () => {
-      console.log('Socket connected')
+      console.log('Connected to Socket.io server')
     })
 
     this.socket.on('disconnect', () => {
-      console.log('Socket disconnected')
-    })
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error)
+      console.log('Disconnected from Socket.io server')
     })
 
     return this.socket
@@ -51,6 +47,27 @@ class SocketService {
     })
   }
 
+  onReceiveMessage(callback: (data: any) => void) {
+    this.socket?.on('receive-message', callback)
+  }
+
+  onUsersOnline(callback: (data: { userIds: string[] }) => void) {
+    this.socket?.on('users:online', callback)
+  }
+
+  onUserOnline(callback: (data: { userId: string }) => void) {
+    this.socket?.on('user:online', callback)
+  }
+
+  onUserOffline(callback: (data: { userId: string }) => void) {
+    this.socket?.on('user:offline', callback)
+  }
+
+  off(event: string) {
+    this.socket?.off(event)
+  }
+
+  // Các event liên quan đến gửi file
   sendFileMetadata(metadata: {
     fileId: string
     originalName: string
@@ -94,25 +111,51 @@ class SocketService {
       })
     })
   }
+  //========================================================================
 
-  onReceiveMessage(callback: (data: any) => void) {
-    this.socket?.on('receive-message', callback)
+  // Các event liên quan đến gửi Video
+  sendVideoMetadata(metadata: {
+    fileId: string
+    originalName: string
+    size: number
+    mimeType: string
+    totalChunks: number
+    receiverUsername: string
+  }) {
+    console.log('Tiến hành emit [video-metadata]')
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-metadata', metadata, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-metadata failed'))
+        }
+      })
+    })
   }
 
-  onUsersOnline(callback: (data: { userIds: string[] }) => void) {
-    this.socket?.on('users:online', callback)
+  sendVideoChunk(chunkData: { fileId: string; chunkIndex: number; totalChunks: number; data: ArrayBuffer | string }) {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-chunk', chunkData, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-chunk failed'))
+        }
+      })
+    })
   }
 
-  onUserOnline(callback: (data: { userId: string }) => void) {
-    this.socket?.on('user:online', callback)
-  }
-
-  onUserOffline(callback: (data: { userId: string }) => void) {
-    this.socket?.on('user:offline', callback)
-  }
-
-  off(event: string) {
-    this.socket?.off(event)
+  completeVideoUpload(fileId: string) {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('video-upload-complete', { fileId }, (response: any) => {
+        if (response?.success) {
+          resolve(response)
+        } else {
+          reject(new Error(response?.error || 'video-upload-complete failed'))
+        }
+      })
+    })
   }
 }
 

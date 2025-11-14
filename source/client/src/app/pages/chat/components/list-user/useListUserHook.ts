@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import conversationService from '@/services/conversation.service'
 import socketService from '@/services/socket.service'
 import useNotificationHook from '@/shared/hook/useNotificationHook'
@@ -21,10 +20,12 @@ const useListUserHook = () => {
   const { showError, showSuccess } = useNotificationHook()
   const navigate = useNavigate()
 
+  // Lấy danh sách users
   const getListUser = async () => {
     try {
       const response = await conversationService.getListUser()
       if (response.status === 200) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const users = response.data.data.map((u: any) => ({
           id: u._id,
           username: u.username,
@@ -34,7 +35,7 @@ const useListUserHook = () => {
         }))
         setListUser(users)
       }
-    } catch {
+    } catch (error) {
       showError('Không thể tải danh sách người dùng')
     }
   }
@@ -47,16 +48,13 @@ const useListUserHook = () => {
       return
     }
 
-    // Connect socket
     socketService.connect(token)
 
-    // Listen online users
     socketService.onUsersOnline(({ userIds }) => {
       setOnlineUsers(userIds)
     })
 
     socketService.onUserOnline(({ userId }) => {
-      getListUser()
       setOnlineUsers((prev) => [...new Set([...prev, userId])])
     })
 
@@ -64,7 +62,6 @@ const useListUserHook = () => {
       setOnlineUsers((prev) => prev.filter((id) => id !== userId))
     })
 
-    // Load users
     getListUser()
 
     return () => {
@@ -72,7 +69,7 @@ const useListUserHook = () => {
     }
   }, [])
 
-  // Update user status based on socket events
+  // Cập nhật trạng thái user dựa trên sự kiện socket
   useEffect(() => {
     setListUser((prevUsers) =>
       prevUsers.map((user) => ({
@@ -82,7 +79,7 @@ const useListUserHook = () => {
     )
   }, [onlineUsers])
 
-  // Handle select user
+  // Xử lý sự kiện chọn User
   const handleSelectUser = async (user: GetListUserResponse) => {
     try {
       console.log(`username: ${user.username}`)
@@ -95,10 +92,10 @@ const useListUserHook = () => {
         const conversationId = response.data.data._id
         console.log('conversationId::::', conversationId)
 
-        // Join conversation room
+        // Tham gia cuộc trò chuyện
         socketService.joinConversations([conversationId])
 
-        // Navigate to chat với conversationId và username
+        // điều hướng đến chat với conversationId và username
         navigate(`/chat/${conversationId}`, {
           state: {
             username: user.username,
@@ -110,7 +107,6 @@ const useListUserHook = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       showError(error.response?.data?.error || 'Không thể tạo cuộc trò chuyện')
-      console.error('Error creating conversation:', error)
     }
   }
 

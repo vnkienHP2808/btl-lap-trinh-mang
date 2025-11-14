@@ -13,12 +13,12 @@ export const socketAuth = async (socket: Socket, next: (err?: Error) => void) =>
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
     const user = await User.findOne({ username: decoded.username })
 
-    if (!user) return next(new Error('Không tìm thấy người dùng'))
+    if (!user) return next(new Error('User không tồn tại'))
 
     socket.data.username = decoded.username
     socket.data.userId = user._id.toString()
     next()
   } catch {
-    next(new Error('Xác thực thất bại'))
+    next(new Error('Lỗi Authen'))
   }
 }
