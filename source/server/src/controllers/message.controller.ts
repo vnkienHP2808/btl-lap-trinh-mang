@@ -21,9 +21,8 @@ const getAllMessageOfConversation = async (req: AuthRequest, res: Response) => {
       .populate('senderId', 'username status')
 
     res.json({ success: true, messages: 'Lấy thành công tin nhắn đoạn chat', data: messages })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message })
+  } catch {
+    res.status(500).json({ success: false, error: 'Lỗi server' })
   }
 }
 

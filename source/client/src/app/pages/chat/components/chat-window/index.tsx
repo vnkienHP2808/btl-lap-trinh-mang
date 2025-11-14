@@ -9,24 +9,15 @@ const { TextArea } = Input
 const ChatWindow = () => {
   const username = storageService.getUsernameFromLS()
   const {
-    handleFileSelect,
     messages,
     inputValue,
-    loading,
     messagesEndRef,
+    uploadingFile,
+    handleFileSelect,
     handleInputChange,
     handleSend,
-    handleKeyPress,
-    uploadingFile
+    handleKeyPress
   } = useChatWindowHook()
-
-  if (loading) {
-    return (
-      <div className='flex h-full items-center justify-center'>
-        <span>Đang tải tin nhắn...</span>
-      </div>
-    )
-  }
 
   return (
     <div className='flex h-full flex-col'>

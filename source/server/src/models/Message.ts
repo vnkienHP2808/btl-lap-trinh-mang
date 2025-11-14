@@ -30,12 +30,12 @@ const MessageSchema = new Schema(
   {
     conversationId: {
       type: Schema.Types.ObjectId,
-      ref: 'Conversation', // Tham chiếu đến Conversation Model
+      ref: 'Conversation',
       required: true
     },
     senderId: {
       type: Schema.Types.ObjectId,
-      ref: 'User', // Tham chiếu đến User Model
+      ref: 'User',
       required: true
     },
     timestamp: {

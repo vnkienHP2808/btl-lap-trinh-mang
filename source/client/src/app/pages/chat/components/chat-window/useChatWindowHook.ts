@@ -1,38 +1,33 @@
 import clientService from '@/services/client.service'
 import socketService from '@/services/socket.service'
+import { CHUNK_SIZE, MAX_FILE_SIZE, MAX_VIDEO_SIZE } from '@/shared/constants/media'
+import useLoadingHook from '@/shared/hook/useLoadingHook'
 import useNotificationHook from '@/shared/hook/useNotificationHook'
 import type { Message } from '@/shared/types/chat.type'
-import { readChunkAsBase64 } from '@/shared/utils/readChunkAsBase64'
+import { readChunkAsBase64 } from '@/shared/utils/readChunkAsBase64.util'
+import isVideoFile from '@/shared/utils/videoHandler.util'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
-const isVideoFile = (file: File) => {
-  const ext = file.name.split('.').pop()?.toLowerCase()
-  const videoExts = ['mp4', 'mov', 'mkv', 'webm', 'avi']
-
-  return file.type.startsWith('video/') || (ext ? videoExts.includes(ext) : false)
-}
-
 const useChatWindowHook = () => {
-  const { conversationId } = useParams<{ conversationId: string }>()
-  const location = useLocation()
-  const { username: receiverUsername, userId: receiverId, status } = location.state || {}
-  const CHUNK_SIZE = 64 * 1024 // 64KB mỗi chunk
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [uploadingFile, setUploadingFile] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const location = useLocation()
+  const { conversationId } = useParams<{ conversationId: string }>()
+  const { username: receiverUsername, userId: receiverId, status } = location.state || {}
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { showError } = useNotificationHook()
+  const { start, finish } = useLoadingHook()
 
   const currentUsername = localStorage.getItem('userName')
 
-  // Load messages
+  // Tài danh sách tin nhắn
   const loadMessages = async () => {
     if (!conversationId) return
 
     try {
-      setLoading(true)
+      start()
       const response = await clientService.getAllMessageOfConversation(conversationId)
       if (response.status === 200) {
         const messagesData = response.data.data.map((msg: Message) => {
@@ -46,11 +41,11 @@ const useChatWindowHook = () => {
       showError('Không thể tải tin nhắn')
       console.error('Error loading messages:', error)
     } finally {
-      setLoading(false)
+      finish()
     }
   }
 
-  // Setup socket listeners
+  // socket lắng nghe tin nhắn mới
   useEffect(() => {
     if (!conversationId) return
     loadMessages()
@@ -78,7 +73,7 @@ const useChatWindowHook = () => {
     }
   }, [conversationId])
 
-  // Auto scroll to bottom
+  // Tự động scroll xuống dưới khi có tin nhắn mới
   useEffect(() => {
     scrollToBottom()
   }, [messages])
@@ -95,17 +90,15 @@ const useChatWindowHook = () => {
     const files = e.target.files
     if (!files || files.length === 0) return
     const file = files[0]
-
     const video = isVideoFile(file)
 
-    // Giới hạn dung lượng
     if (video) {
-      if (file.size > 50 * 1024 * 1024) {
+      if (file.size > MAX_VIDEO_SIZE) {
         showError('Video không được vượt quá 50MB')
         return
       }
     } else {
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE) {
         showError('File không được vượt quá 10MB')
         return
       }
@@ -129,7 +122,6 @@ const useChatWindowHook = () => {
       console.log('- Total chunks:', totalChunks)
 
       if (video) {
-        // ================== LUỒNG VIDEO ==================
         // 1. metadata
         await socketService.sendVideoMetadata({
           fileId,
@@ -161,7 +153,7 @@ const useChatWindowHook = () => {
         // 3. complete (video-upload-complete chỉ cần fileId)
         await socketService.completeVideoUpload(fileId)
       } else {
-        // ================== LUỒNG FILE (đang dùng) ==================
+        // nếu không phải video thì là file
         // 1. metadata
         await socketService.sendFileMetadata({
           fileId,
@@ -229,7 +221,6 @@ const useChatWindowHook = () => {
   return {
     messages,
     inputValue,
-    loading,
     receiverUsername,
     receiverId,
     status,

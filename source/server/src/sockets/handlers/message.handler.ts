@@ -13,42 +13,12 @@ import path from 'path'
  *
  */
 export const messageHandler = (io: Server, socket: Socket) => {
-  /**
-   * Sự kiện gửi tin nhắn
-   * - Client phát sự kiện 'send-message' khi người dùng gửi tin nhắn cho người khác
-   * - Dữ liệu gồm: {receiverUsername, content, type, media}
-   * - Sau khi xử lý, server phản hồi lại qua callback (thành công hoặc lỗi). Callback ở đây hiểu đơn giản là 1 cái hàm được truyền từ ngoài (Client) vào. Cái này sẽ sử lý theo từng trường hợp cụ thể
-   * =============================================
-   * Ví dụ Callback:
-   *  ======= (Client)
-   * socket.emit('send-message', data, (response) => {
-   *  if (response.success) {
-   *   // Gửi thành công
-   *  } else {
-   *  // Gửi thất bại
-   * }
-   * })
-   * Thì cái hàm ở trong on('send-message', ...) này chính là phần callback
-   * 
-   * Trên Server lắng nghe sự kiện send-message, lúc nó xử lý xong gọi hàm này => Client sẽ chạy cái hàm đấy
-   * ======= (Server)
-   * socket.on('send-message', async (data, callback) => {
-   * // data: dữ liệu client gửi lên
-   * // callback: một hàm client gửi kèm để nhận phản hồi
-   * // xử lý xong...
-   * callback({
-    success: true,
-    message: 'Tin nhắn đã được lưu!'
-    })
-   })
-   */
   socket.on('send-message', async (data, callback) => {
     try {
       // Lấy thông tin người gửi từ socket
       const { receiverUsername, content, type = 'text', media = null } = data
       console.log(data)
       const userId = socket.data.userId
-      const username = socket.data.username
 
       /**
        * 1. Kiểm tra người nhận có tồn tại hay không

@@ -48,7 +48,6 @@ const MessageBubble = ({ message }: MessageBubbleProp) => {
               </div>
             </div>
           ) : message.media?.url ? (
-            // fallback: file khác loại -> vẫn để link như cũ
             <a
               href={fileUrl}
               target='_blank'
