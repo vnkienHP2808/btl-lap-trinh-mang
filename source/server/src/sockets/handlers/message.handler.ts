@@ -195,7 +195,7 @@ export const messageHandler = (io: Server, socket: Socket) => {
       upload.chunks.set(chunkIndex, data)
       upload.receivedChunks++
 
-      console.log(`📦 Received chunk ${chunkIndex + 1}/${upload.metadata.totalChunks} for file ${fileId}`)
+      console.log(`Received chunk ${chunkIndex + 1}/${upload.metadata.totalChunks} for file ${fileId}`)
 
       callback({ success: true })
     } catch (error: any) {
