@@ -62,8 +62,7 @@ export const messageHandler = (io: Server, socket: Socket) => {
       }
 
       /**
-       * 2. Kiểm tra xem giữa 2 người đã có cuộc hội thoại chưa
-       *    - Nếu chưa, tạo mới 1 conversation
+       * 2. Tạo message mới trong conversation
        */
       let conversation = await Conversation.findOne({
         participants: { $all: [userId, receiver._id] }
@@ -87,25 +86,22 @@ export const messageHandler = (io: Server, socket: Socket) => {
         messageData.media = media
       }
 
-      /**
-       * 3. Tạo message mới trong conversation
-       */
       const message = await Message.create(messageData)
 
       /**
-       * 4. Cập nhật message cuối cùng (lastMessageId) trong conversation
+       * 3. Cập nhật message cuối cùng (lastMessageId) trong conversation
        */
       await Conversation.findByIdAndUpdate(conversation._id, {
         lastMessageId: message._id
       })
 
       /**
-       * 5. Populate thông tin người gửi (username, status)
+       * 4. Populate thông tin người gửi (username, status)
        */
       await message.populate('senderId', 'username status')
 
       /**
-       * 6. Gửi tin nhắn đến tất cả client trong phòng tương ứng (cả người nhận và người gửi)
+       * 5. Gửi tin nhắn đến tất cả client trong phòng tương ứng (cả người nhận và người gửi)
        *     - Mỗi cuộc hội thoại tương ứng với 1 room có id = conversation._id
        */
       io.to(conversation._id.toString()).emit('receive-message', {
@@ -115,7 +111,7 @@ export const messageHandler = (io: Server, socket: Socket) => {
       console.log('phát đi sự kiện nhận tin nhắn')
 
       /**
-       * 7. Gọi callback trả về kết quả cho client đã gửi
+       * 6. Gọi callback trả về kết quả cho client đã gửi
        */
       callback({
         success: true,
