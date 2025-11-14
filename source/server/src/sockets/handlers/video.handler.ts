@@ -5,6 +5,7 @@ import path from 'path'
 import Conversation from '~/models/Conversation'
 import User from '~/models/User'
 import Message from '~/models/Message'
+import getExtFromMime from '~/shared/utils/videoHandler'
 
 /**
  * Chunked Video Upload via Socket.IO
@@ -28,6 +29,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
   // 1) Nhận metadata & khởi tạo stream tạm
   socket.on('video-metadata', async (metadata: any, callback: (resp: any) => void) => {
     try {
+      console.log('Nhận metadata video:')
       const { fileId, totalChunks, mimeType } = metadata || {}
       if (!fileId || typeof totalChunks !== 'number') {
         return callback({ success: false, error: 'Thiếu fileId/totalChunks' })
@@ -61,6 +63,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
       payload: { fileId: string; chunkIndex: number; totalChunks: number; data: ArrayBuffer | string },
       callback: (resp: any) => void
     ) => {
+      console.log('Nhận chunk video')
       try {
         const { fileId, data } = payload || {}
         const ctx = videoUploads.get(fileId)
@@ -89,6 +92,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
   // 3) Hoàn tất: đóng stream, move sang thư mục final, tạo message
   socket.on('video-upload-complete', async ({ fileId }: { fileId: string }, callback: (resp: any) => void) => {
     try {
+      console.log('Hoàn tất upload video:', fileId)
       const ctx = videoUploads.get(fileId)
       if (!ctx || !ctx.writeStream) {
         return callback({ success: false, error: 'Video upload không tồn tại' })
@@ -113,12 +117,13 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
       fs.mkdirSync(finalDir, { recursive: true })
       const finalPath = path.join(finalDir, `${fileId}${getExtFromMime(metadata?.mimeType)}`)
       fs.renameSync(tempFilePath, finalPath)
+      const url = `/uploads/videos/${path.basename(finalPath)}`
 
       // dọn map
       videoUploads.delete(fileId)
 
       // tạo message chat kiểu 'video'
-      const senderId = (socket as any).userId
+      const senderId = socket.data.userId
       const receiver = await User.findOne({ username: metadata.receiverUsername })
       if (!receiver) return callback({ success: false, error: 'Không tìm thấy người nhận' })
 
@@ -131,33 +136,26 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
 
       const message = await Message.create({
         conversationId: conversation._id,
-        sender: senderId,
+        senderId: senderId,
         type: 'video',
         content: finalPath, // hoặc URL public nếu có static/CDN
-        metadata: {
+        media: {
+          url: url,
+          mimeType: metadata.mimeType,
+          fileName: path.basename(finalPath),
           originalName: metadata.originalName,
-          size: metadata.size,
-          mimeType: metadata.mimeType
+          size: metadata.size
         }
       })
 
+      await message.populate('senderId', 'username status')
+
       const roomId = String(conversation._id)
-      io.to(roomId).emit('message:received', { message, conversationId: conversation._id })
+      io.to(roomId).emit('receive-message', { message, conversationId: conversation._id })
 
       return callback({ success: true, message, conversationId: conversation._id, path: finalPath })
     } catch (err: any) {
       return callback({ success: false, error: err.message })
     }
   })
-}
-
-function getExtFromMime(mime?: string): string {
-  if (!mime) return '.mp4'
-  const m = mime.toLowerCase()
-  if (m.includes('webm')) return '.webm'
-  if (m.includes('ogg')) return '.ogg'
-  if (m.includes('quicktime') || m.includes('mov')) return '.mov'
-  if (m.includes('x-matroska') || m.includes('mkv')) return '.mkv'
-  if (m.includes('mp4')) return '.mp4'
-  return '.mp4'
 }
