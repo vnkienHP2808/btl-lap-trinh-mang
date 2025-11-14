@@ -9,19 +9,13 @@ import { uploadVideoHandler } from './handlers/video.handler'
  * @param io
  */
 export const setupSocket = (io: Server) => {
-  // Middleware xác thực người dùng
   io.use(socketAuth)
-
-  // Xử lý kết nối socket
   io.on('connection', async (socket) => {
     const username = socket.data.username
     const userId = socket.data.userId
-
     console.log(`User connected: ${username}`)
-
     await User.findById(userId).updateOne({ status: 'online', lastSeen: new Date() })
 
-    // Tham gia đoạn chat
     socket.on('join-conversations', (conversationIds: string[]) => {
       conversationIds.forEach((id) => socket.join(id))
       console.log(`${username} joined ${conversationIds.length} rooms`)
@@ -34,7 +28,7 @@ export const setupSocket = (io: Server) => {
     uploadVideoHandler(io, socket)
 
     socket.on('disconnect', async () => {
-      console.log(`User disconnected: ${username}`)
+      console.log(`User mất kết nối: ${username}`)
       await User.findById(userId).updateOne({ status: 'offline', lastSeen: new Date() })
     })
   })

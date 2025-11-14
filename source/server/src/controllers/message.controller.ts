@@ -14,7 +14,6 @@ const getAllMessageOfConversation = async (req: AuthRequest, res: Response) => {
     const { conversationId } = req.params
     logger.info(`Lấy tất cả tin nhắn cho cuộc hội thoại ID: [${conversationId}]`)
     const { limit = 50, skip = 0 } = req.query
-
     const messages = await Message.find({ conversationId })
       .sort({ timestamp: 1 })
       .limit(Number(limit))

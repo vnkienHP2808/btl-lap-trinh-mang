@@ -55,7 +55,7 @@ const MessageBubble = ({ message }: MessageBubbleProp) => {
               rel='noreferrer'
               className={`${message.isMe ? '!text-white' : '!text-black'} underline hover:text-blue-100`}
             >
-              📂{message.media.url.split('/').pop()}
+              File tài liệu: {message.media.url.split('/').pop()}
             </a>
           ) : (
             <p className='break-words whitespace-pre-wrap'>{message.content}</p>

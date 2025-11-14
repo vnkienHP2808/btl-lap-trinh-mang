@@ -75,7 +75,6 @@ const getAllUserExceptCurrent = async (req: AuthRequest, res: Response) => {
   logger.info('Lấy tất cả người dùng trừ người dùng hiện tại')
   try {
     const currentUserId = (req.user as jwt.JwtPayload).id
-
     const users = await User.find({
       _id: { $ne: currentUserId }
     }).select('username status lastSeen')

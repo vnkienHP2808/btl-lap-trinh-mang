@@ -30,7 +30,7 @@ const ChatWindow = () => {
 
   return (
     <div className='flex h-full flex-col'>
-      {/* Messages area */}
+      {/* Khu vực hiện message */}
       <div className='flex-1 overflow-y-auto bg-gray-50 p-4'>
         <div className='flex flex-col space-y-4'>
           {messages.map((msg, index) => {
@@ -51,7 +51,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      {/* Input area */}
+      {/* Khu vực hiện ô nhập Input */}
       <div className='border-t bg-white p-4'>
         <div className='flex space-x-2'>
           <Button

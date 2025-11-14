@@ -47,6 +47,27 @@ class SocketService {
     })
   }
 
+  onReceiveMessage(callback: (data: any) => void) {
+    this.socket?.on('receive-message', callback)
+  }
+
+  onUsersOnline(callback: (data: { userIds: string[] }) => void) {
+    this.socket?.on('users:online', callback)
+  }
+
+  onUserOnline(callback: (data: { userId: string }) => void) {
+    this.socket?.on('user:online', callback)
+  }
+
+  onUserOffline(callback: (data: { userId: string }) => void) {
+    this.socket?.on('user:offline', callback)
+  }
+
+  off(event: string) {
+    this.socket?.off(event)
+  }
+
+  // Các event liên quan đến gửi file
   sendFileMetadata(metadata: {
     fileId: string
     originalName: string
@@ -90,28 +111,9 @@ class SocketService {
       })
     })
   }
+  //========================================================================
 
-  onReceiveMessage(callback: (data: any) => void) {
-    this.socket?.on('receive-message', callback)
-  }
-
-  onUsersOnline(callback: (data: { userIds: string[] }) => void) {
-    this.socket?.on('users:online', callback)
-  }
-
-  onUserOnline(callback: (data: { userId: string }) => void) {
-    this.socket?.on('user:online', callback)
-  }
-
-  onUserOffline(callback: (data: { userId: string }) => void) {
-    this.socket?.on('user:offline', callback)
-  }
-
-  off(event: string) {
-    this.socket?.off(event)
-  }
-
-  // ====== Video upload (chunked) ======
+  // Các event liên quan đến gửi Video
   sendVideoMetadata(metadata: {
     fileId: string
     originalName: string

@@ -49,7 +49,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
 
       return callback({ success: true })
     } catch (err: any) {
-      console.error('video-metadata error:', err)
+      console.error(err)
       return callback({ success: false, error: err.message })
     }
   })
@@ -80,7 +80,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
 
         return callback({ success: true })
       } catch (err: any) {
-        console.error('video-chunk error:', err)
+        console.error(err)
         return callback({ success: false, error: err.message })
       }
     }
@@ -111,10 +111,7 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
       // chuyển sang thư mục final
       const finalDir = path.join(process.cwd(), 'uploads', 'videos')
       fs.mkdirSync(finalDir, { recursive: true })
-      const finalPath = path.join(
-        finalDir,
-        `${fileId}${getExtFromMime(metadata?.mimeType)}`
-      )
+      const finalPath = path.join(finalDir, `${fileId}${getExtFromMime(metadata?.mimeType)}`)
       fs.renameSync(tempFilePath, finalPath)
 
       // dọn map
@@ -149,7 +146,6 @@ export const uploadVideoHandler = (io: Server, socket: Socket) => {
 
       return callback({ success: true, message, conversationId: conversation._id, path: finalPath })
     } catch (err: any) {
-      console.error('video-upload-complete error:', err)
       return callback({ success: false, error: err.message })
     }
   })

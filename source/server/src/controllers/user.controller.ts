@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express'
 import User from '~/models/User'
 import HTTPStatus from '~/shared/constants/httpStatus'
@@ -37,6 +36,7 @@ const register = async (req: Request, res: Response) => {
         username: savedUser.username
       }
     })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error('Lỗi khi đăng ký người dùng:', e)
 
@@ -127,7 +127,6 @@ const logout = async (req: Request, res: Response) => {
   // Logout cho người dùng
   logger.info('Đăng xuất cho người dùng')
   try {
-    // Laays token trong header
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
 
@@ -190,6 +189,7 @@ const getListUser = async (req: AuthRequest, res: Response) => {
         data: listUser
       })
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error('Lỗi không thể lấy danh sách người dùng: ', e)
     return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
