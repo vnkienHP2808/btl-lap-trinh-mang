@@ -6,6 +6,13 @@ import { readChunkAsBase64 } from '@/shared/utils/readChunkAsBase64'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 
+const isVideoFile = (file: File) => {
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  const videoExts = ['mp4', 'mov', 'mkv', 'webm', 'avi']
+
+  return file.type.startsWith('video/') || (ext ? videoExts.includes(ext) : false)
+}
+
 const useChatWindowHook = () => {
   const { conversationId } = useParams<{ conversationId: string }>()
   const location = useLocation()
@@ -89,10 +96,19 @@ const useChatWindowHook = () => {
     if (!files || files.length === 0) return
     const file = files[0]
 
-    // Kiểm tra kích thước
-    if (file.size > 10 * 1024 * 1024) {
-      showError('File không được vượt quá 10MB')
-      return
+    const video = isVideoFile(file)
+
+    // Giới hạn dung lượng
+    if (video) {
+      if (file.size > 50 * 1024 * 1024) {
+        showError('Video không được vượt quá 50MB')
+        return
+      }
+    } else {
+      if (file.size > 10 * 1024 * 1024) {
+        showError('File không được vượt quá 10MB')
+        return
+      }
     }
 
     if (!receiverUsername) {
@@ -103,53 +119,88 @@ const useChatWindowHook = () => {
     try {
       setUploadingFile(true)
 
-      // Tạo unique ID cho file upload này
+      // tạo id + tính số chunk dùng chung cho cả file & video
       const fileId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
 
-      console.log('Bắt đầu upload file:')
+      console.log(video ? 'Bắt đầu upload VIDEO' : 'Bắt đầu upload FILE')
       console.log('- File ID:', fileId)
       console.log('- Size:', file.size)
       console.log('- Total chunks:', totalChunks)
 
-      // Gửi metadata trước
-      await socketService.sendFileMetadata({
-        fileId,
-        originalName: file.name,
-        size: file.size,
-        mimeType: file.type,
-        totalChunks,
-        receiverUsername
-      })
-
-      // Đọc và gửi từng chunk
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const start = chunkIndex * CHUNK_SIZE
-        const end = Math.min(start + CHUNK_SIZE, file.size)
-        const chunk = file.slice(start, end)
-
-        // Đọc chunk thành base64
-        const base64Chunk = await readChunkAsBase64(chunk)
-
-        // Gửi chunk
-        await socketService.sendFileChunk({
+      if (video) {
+        // ================== LUỒNG VIDEO ==================
+        // 1. metadata
+        await socketService.sendVideoMetadata({
           fileId,
-          chunkIndex,
+          originalName: file.name,
+          size: file.size,
+          mimeType: file.type,
           totalChunks,
-          data: base64Chunk
+          receiverUsername
         })
 
-        console.log(`Gửi chunk ${chunkIndex + 1}/${totalChunks}`)
+        // 2. từng chunk (gửi dạng ArrayBuffer)
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * CHUNK_SIZE
+          const end = Math.min(start + CHUNK_SIZE, file.size)
+          const chunk = file.slice(start, end)
+
+          const arrayBuffer = await chunk.arrayBuffer()
+
+          await socketService.sendVideoChunk({
+            fileId,
+            chunkIndex,
+            totalChunks,
+            data: arrayBuffer
+          })
+
+          console.log(`Gửi chunk VIDEO ${chunkIndex + 1}/${totalChunks}`)
+        }
+
+        // 3. complete (video-upload-complete chỉ cần fileId)
+        await socketService.completeVideoUpload(fileId)
+      } else {
+        // ================== LUỒNG FILE (đang dùng) ==================
+        // 1. metadata
+        await socketService.sendFileMetadata({
+          fileId,
+          originalName: file.name,
+          size: file.size,
+          mimeType: file.type,
+          totalChunks,
+          receiverUsername
+        })
+
+        // 2. từng chunk (đọc base64 + gửi file-chunk)
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * CHUNK_SIZE
+          const end = Math.min(start + CHUNK_SIZE, file.size)
+          const chunk = file.slice(start, end)
+
+          const base64Chunk = await readChunkAsBase64(chunk)
+
+          await socketService.sendFileChunk({
+            fileId,
+            chunkIndex,
+            totalChunks,
+            data: base64Chunk
+          })
+
+          console.log(`Gửi chunk FILE ${chunkIndex + 1}/${totalChunks}`)
+        }
+
+        // 3. complete
+        await socketService.completeFileUpload({
+          fileId,
+          receiverUsername
+        })
       }
 
-      await socketService.completeFileUpload({
-        fileId,
-        receiverUsername
-      })
-
+      // reset input
       e.target.value = ''
     } catch (error) {
-      showError('Không thể gửi file')
+      showError(video ? 'Không thể gửi video' : 'Không thể gửi file')
       console.error(error)
     } finally {
       setUploadingFile(false)

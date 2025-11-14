@@ -34,13 +34,12 @@ const ChatWindow = () => {
       <div className='flex-1 overflow-y-auto bg-gray-50 p-4'>
         <div className='flex flex-col space-y-4'>
           {messages.map((msg, index) => {
-            console.log(msg)
             const isMe = msg.senderId.username === username
+            console.log(`${msg.senderId.username}  ${username}`)
             const msgConverted = {
               ...msg,
               isMe: isMe
             }
-            console.log(msgConverted)
             return (
               <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <MessageBubble message={msgConverted} />
@@ -64,11 +63,7 @@ const ChatWindow = () => {
             disabled={uploadingFile}
           />
 
-          <input id='file-input'
-            type='file' 
-            style={{ display: 'none' }} 
-            onChange={handleFileSelect} 
-          />
+          <input id='file-input' type='file' style={{ display: 'none' }} onChange={handleFileSelect} />
 
           <TextArea
             value={inputValue}
