@@ -63,7 +63,13 @@ const ChatWindow = () => {
             loading={uploadingFile}
             disabled={uploadingFile}
           />
-          <input id='file-input' type='file' style={{ display: 'none' }} onChange={handleFileSelect} multiple />
+
+          <input id='file-input'
+            type='file' 
+            style={{ display: 'none' }} 
+            onChange={handleFileSelect} 
+          />
+
           <TextArea
             value={inputValue}
             onChange={handleInputChange}
