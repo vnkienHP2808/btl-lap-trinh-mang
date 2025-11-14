@@ -1,6 +1,6 @@
 import express from 'express'
 import { getListUser, login, logout, register } from '~/controllers/user.controller'
-import { authenticateToken } from '~/middlewares/user.middleware'
+import { authenticateToken } from '~/middlewares/user.middlewares'
 /**
  * Định nghĩa các route liên quan đến user
  */
