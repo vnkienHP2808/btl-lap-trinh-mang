@@ -39,12 +39,12 @@ client  <-->  server  <-->  database
 
 ## ⚙️ CÔNG NGHỆ SỬ DỤNG
 
-| Thành phần | Công nghệ                                         | Ghi chú                                                          |
-| ---------- | ------------------------------------------------- | ---------------------------------------------------------------- |
-| Server     | NodeJS 20 + ExpressJS + socket.io                 | Xử lý logic, quản lý kết nối realtime                            |
-| Client     | NodeJS 20 + ReactJS 18 + socket.io-client + Axios | Giao tiếp WebSocket + HTTP                                       |
-| Database   | MongooDB                                          | Lưu trữ dữ liệu tạm thời                                         |
-| Triển khai | Docker Engine 27.3.1 + Docker Compose 2.29.7      | Đóng gói ứng dụng, sẵn sàng triển khai lên môi trường production |
+| Thành phần | Công nghệ                                                | Ghi chú                                                          |
+| ---------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| Server     | NodeJS 20 + ExpressJS 5.1.0 + socket.io 4.8.1            | Xử lý logic, quản lý kết nối realtime                            |
+| Client     | NodeJS 20 + ReactJS 18 + socket.io-client + Axios 1.10.0 | Giao tiếp WebSocket + HTTP                                       |
+| Database   | MongooDB + Mongoose 8.19.2                               | Lưu trữ dữ liệu tạm thời                                         |
+| Triển khai | Docker Engine 27.3.1 + Docker Compose 2.29.7             | Đóng gói ứng dụng, sẵn sàng triển khai lên môi trường production |
 
 ---
 
